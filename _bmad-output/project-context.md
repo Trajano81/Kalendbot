@@ -14,7 +14,7 @@ optimized_for_llm: true
 _Reglas críticas y patrones que los agentes de IA deben seguir al implementar código en este proyecto. Enfocado en detalles no obvios que un agente podría pasar por alto._
 
 Bot inteligente de gestión de calendario para NV Mexico (Asociación Neerlandesa en México).
-Coordina 31 eventos anuales con 9 proveedores/contactos vía WhatsApp.
+Coordina 30 eventos anuales con 9 proveedores/contactos vía WhatsApp.
 
 ---
 
@@ -320,13 +320,17 @@ Cada contacto tiene un `rol_kalendbot` en su JSON (`kalendbot-data/contactos/*.j
 | ID | Descripción | Estado |
 |----|-------------|--------|
 | OBS-01 | Fuzzy matching en ContactManager | ✅ Resuelto |
-| OBS-02 | Discrepancia conteo eventos Koen | 🔲 Pendiente (requiere Excel) |
+| OBS-02 | Discrepancia conteo eventos Koen | ✅ Resuelto — Nations League eliminado |
 | OBS-03 | Conflictos 5 de mayo OK | ✅ OK |
 | OBS-04 | list_pending sin distinción de estado | ✅ Resuelto |
 | OBS-05 | FAQ para ahorro de tokens | ✅ Resuelto |
 
 ### Sesión 3 — `_bmad-output/test-artifacts/issues-cli-testing-003.md`
 - Validación de fixes OBS-01/04/05: 25/25 tests PASS
+
+| ID | Descripción | Estado |
+|----|-------------|--------|
+| OBS-06 | 5 eventos pasados en estado "pendiente" | 🔲 Validar con Rocco en producción |
 
 ---
 
@@ -338,7 +342,8 @@ Cada contacto tiene un `rol_kalendbot` en su JSON (`kalendbot-data/contactos/*.j
 - [x] MVP: Agente LangChain con 8 tools + CLI
 - [x] Fix ISSUE-01 a 05
 - [x] Fix OBS-01, 04, 05
-- [ ] OBS-02: Verificar Nations League (requiere Excel)
+- [x] OBS-02: Nations League eliminado (no estaba en Excel principal)
+- [ ] OBS-06: 5 eventos pasados en "pendiente" — validar con Rocco en producción
 - [ ] Testing CLI: completar escenarios pendientes
 
 ### Fase 2: Integración WhatsApp — Evolution API
@@ -377,7 +382,7 @@ Cada contacto tiene un `rol_kalendbot` en su JSON (`kalendbot-data/contactos/*.j
 - **Proveedores** (`kalendbot-data/proveedores/`): Organizaciones del Excel "Mapa de partners"
 - **Contactos** (`kalendbot-data/contactos/`): Personas del Excel columna L (nombre) + M (teléfono)
 - **Flyer responsibility** (columna N): Si hay nombre → esa persona. Si vacío → Hanna van Rijsse
-- **Calendario:** `kalendbot-data/calendario-2026.json` — 31 eventos
+- **Calendario:** `kalendbot-data/calendario-2026.json` — 30 eventos
 - **Config:** `kalendbot-data/config/` — tiers, precedencia, restricciones, eventos-externos, faq
 
 ---
