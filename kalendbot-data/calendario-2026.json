@@ -8,25 +8,47 @@
       "nombre": "Maandelijkse Pub Quiz",
       "regla": "1er jueves del mes",
       "partner_id": "holland-wafels",
-      "contacto_ids": ["christian-kemper"],
+      "contacto_ids": [
+        "christian-kemper"
+      ],
       "venue_id": "holland-wafels",
       "hora": "19:00",
-      "precio": {"mxn": 75},
+      "precio": {
+        "mxn": 75
+      },
       "descripcion": "Social / Pub Quiz",
       "detalle": "Incl: Organisatie van de quiz",
       "tier_promocion": "regular",
       "flyer_responsable": "proveedor",
       "flyer_responsable_nombre": "Christian Kemper",
       "delegado": true,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "instancias_2026": [
-        {"fecha": "2026-02-05", "estado": "pendiente"},
-        {"fecha": "2026-03-05", "estado": "pendiente"},
-        {"fecha": "2026-04-05", "estado": "pendiente"},
-        {"fecha": "2026-05-07", "estado": "pendiente"},
-        {"fecha": "2026-06-04", "estado": "pendiente"}
+        {
+          "fecha": "2026-02-05",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-03-05",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-04-05",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-05-07",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-06-04",
+          "estado": "pendiente"
+        }
       ],
       "nota": "No se listan instancias julio-diciembre. Posible pausa segundo semestre.",
       "texto_social": "🍻 Pub Quiz bij Holland Wafels\nDenk jij dat je alles weet over geschiedenis, sport, muziek en nog veel meer? Trommel je vrienden op en doe mee aan onze gezellige Pub Quiz!"
@@ -36,19 +58,26 @@
       "nombre": "Maandelijkse Vrijmibo",
       "regla": "Último viernes del mes",
       "partner_id": null,
-      "contacto_ids": ["andre-major"],
+      "contacto_ids": [
+        "andre-major"
+      ],
       "venue_id": null,
       "venue_nombre": "Garrabo, Coyoacán",
       "venue_direccion": "Parq Centenario 15, Coyoacán",
       "hora": "16:00",
-      "precio": {"mxn": 0},
+      "precio": {
+        "mxn": 0
+      },
       "descripcion": "Vrijmibo (after-work)",
       "detalle": "Gezelligheid",
       "tier_promocion": "regular",
       "flyer_responsable": "nv",
       "flyer_oleadas": 3,
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "instancias_2026": [],
@@ -62,10 +91,14 @@
       "fecha": "2026-01-22",
       "estado": "pendiente",
       "partner_id": "embajada-nl",
-      "contacto_ids": ["rocco-van-velzen"],
+      "contacto_ids": [
+        "rocco-van-velzen"
+      ],
       "venue_id": "embajada-nl",
       "hora": "19:00",
-      "precio": {"mxn": 200},
+      "precio": {
+        "mxn": 200
+      },
       "descripcion": "Nieuwjaars Receptie",
       "detalle": "Incl: borrel hap/drankjes. Eventbrite link toevoegen",
       "tier_promocion": "mediano",
@@ -73,7 +106,11 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss", "email"],
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
       "reel_post": true,
       "eventbrite": true,
       "condicional": false
@@ -85,7 +122,9 @@
       "fecha_exacta": false,
       "estado": "pendiente",
       "partner_id": "nv-mexico",
-      "contacto_ids": ["rocco-van-velzen"],
+      "contacto_ids": [
+        "rocco-van-velzen"
+      ],
       "venue_id": null,
       "hora": null,
       "precio": null,
@@ -95,7 +134,11 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss", "email"],
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": false
@@ -106,7 +149,9 @@
       "fecha": "2026-01-24",
       "estado": "pendiente",
       "partner_id": "de-sprinkhaan",
-      "contacto_ids": ["mirjam-van-vliet"],
+      "contacto_ids": [
+        "mirjam-van-vliet"
+      ],
       "venue_id": null,
       "venue_nombre": "Centro Comercial Parque Vía Vallejo",
       "hora": null,
@@ -128,12 +173,17 @@
       "fecha": "2026-03-14",
       "estado": "pendiente",
       "partner_id": "rene-wieben-guia",
-      "contacto_ids": ["rene-wieben"],
+      "contacto_ids": [
+        "rene-wieben"
+      ],
       "venue_id": null,
       "venue_nombre": "Ajusco",
       "venue_direccion": "Verzamelplek wordt bekend gemaakt via Ajusco WhatsApp groep",
       "hora": "09:00",
-      "precio": {"mxn": 0, "nota": "Excl: entree park 50 MXN"},
+      "precio": {
+        "mxn": 0,
+        "nota": "Excl: entree park 50 MXN"
+      },
       "descripcion": "Klimtocht",
       "detalle": "Excl: entree park 50 mxn",
       "tier_promocion": "mediano",
@@ -141,7 +191,10 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": false
@@ -152,17 +205,24 @@
       "fecha": "2026-03-23",
       "estado": "pendiente",
       "partner_id": "holland-wafels",
-      "contacto_ids": ["koen-houwen"],
+      "contacto_ids": [
+        "koen-houwen"
+      ],
       "venue_id": "holland-wafels",
       "hora": null,
-      "precio": {"mxn": 0},
+      "precio": {
+        "mxn": 0
+      },
       "descripcion": "Halve finale Nations League",
       "detalle": "Grote schermen, Hollands snacks",
       "tier_promocion": "regular",
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
@@ -175,10 +235,14 @@
       "fecha_exacta": false,
       "estado": "pendiente",
       "partner_id": "holland-wafels",
-      "contacto_ids": ["koen-houwen"],
+      "contacto_ids": [
+        "koen-houwen"
+      ],
       "venue_id": "holland-wafels",
       "hora": null,
-      "precio": {"mxn": 0},
+      "precio": {
+        "mxn": 0
+      },
       "descripcion": "Groot Nederlands Dictee. Wie beheerst het beste de Nederlandse taal",
       "detalle": "Ned dictee voor Nederlanders en Belgen",
       "tier_promocion": "regular",
@@ -186,7 +250,10 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
@@ -200,12 +267,18 @@
       "nota_fecha": "Movido al 3 de mayo por Semana Santa",
       "estado": "pendiente",
       "partner_id": "de-sprinkhaan",
-      "contacto_ids": ["rocco-van-velzen", "mirjam-van-vliet"],
+      "contacto_ids": [
+        "rocco-van-velzen",
+        "mirjam-van-vliet"
+      ],
       "venue_id": null,
       "venue_nombre": "Lucerna 42, Juárez, CDMX",
       "hora": "15:00",
       "hora_detalle": "Kinderprogramma 3pm-7pm. Avondfeest 7pm-2am",
-      "precio": {"nino": 100, "adulto": 200},
+      "precio": {
+        "nino": 100,
+        "adulto": 200
+      },
       "descripcion": "Koningsdag",
       "detalle": "Incl: vrijmarkt, spelletjes, live muziek, wijnproeverij, DJ, etc",
       "tier_promocion": "grande",
@@ -213,7 +286,14 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 3,
       "delegado": false,
-      "canales": ["flyer", "reel", "eventbrite", "whatsapp", "rrss", "email"],
+      "canales": [
+        "flyer",
+        "reel",
+        "eventbrite",
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
       "reel_post": true,
       "eventbrite": true,
       "condicional": false,
@@ -226,7 +306,9 @@
       "fecha_fin": "2026-05-03",
       "estado": "pendiente",
       "partner_id": "de-sprinkhaan",
-      "contacto_ids": ["mirjam-van-vliet"],
+      "contacto_ids": [
+        "mirjam-van-vliet"
+      ],
       "venue_id": null,
       "venue_nombre": "Quintana Roo",
       "hora": null,
@@ -250,11 +332,15 @@
       "nota_fecha": "Abril/Mei según Excel",
       "estado": "pendiente",
       "partner_id": "atk",
-      "contacto_ids": ["anne-schouten"],
+      "contacto_ids": [
+        "anne-schouten"
+      ],
       "venue_id": null,
       "venue_nombre": "Cuernavaca",
       "hora": "11:00",
-      "precio": {"mxn": 200},
+      "precio": {
+        "mxn": 200
+      },
       "descripcion": "Buitendag: jeu de boules, borrelen en eten",
       "detalle": "Incl eten/drinken/jeu de boules",
       "tier_promocion": "mediano",
@@ -262,7 +348,11 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss", "email"],
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
       "reel_post": false,
       "eventbrite": true,
       "condicional": false,
@@ -275,7 +365,9 @@
       "fecha_exacta": false,
       "estado": "pendiente",
       "partner_id": "popo-redactie",
-      "contacto_ids": ["paul-vd-voort"],
+      "contacto_ids": [
+        "paul-vd-voort"
+      ],
       "venue_id": null,
       "hora": null,
       "precio": null,
@@ -286,7 +378,11 @@
       "flyer_responsable": "proveedor",
       "flyer_responsable_nombre": "Paul",
       "delegado": false,
-      "canales": ["whatsapp", "rrss", "email"],
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
@@ -299,12 +395,16 @@
       "estado": "pendiente",
       "partner_id": null,
       "partner_nombre": "Paul vd Voort / Jasper de Gelder",
-      "contacto_ids": ["paul-vd-voort"],
+      "contacto_ids": [
+        "paul-vd-voort"
+      ],
       "venue_id": null,
       "venue_nombre": "Centro Cultural Mexiquense Bicentenario, Texcoco",
       "venue_direccion": "Carretera Federal, Los Reyes-Texcoco Km. 14.3, 56250 Texcoco de Mora, Méx.",
       "hora": null,
-      "precio": {"mxn": 0},
+      "precio": {
+        "mxn": 0
+      },
       "descripcion": "Expositie Ned kunstenaars",
       "detalle": "Exposición de diversos artistas neerlandeses",
       "tier_promocion": "regular",
@@ -312,7 +412,10 @@
       "flyer_responsable": "proveedor",
       "flyer_responsable_nombre": "Paul",
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": false
@@ -323,10 +426,14 @@
       "fecha": "2026-05-30",
       "estado": "pendiente",
       "partner_id": "holland-wafels",
-      "contacto_ids": ["koen-houwen"],
+      "contacto_ids": [
+        "koen-houwen"
+      ],
       "venue_id": "holland-wafels",
       "hora": "10:00",
-      "precio": {"mxn": 0},
+      "precio": {
+        "mxn": 0
+      },
       "descripcion": "Champions League Finale",
       "detalle": "Grote schermen, Hollands snacks",
       "tier_promocion": "regular",
@@ -334,7 +441,10 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
@@ -346,11 +456,16 @@
       "fecha": "2026-06-06",
       "estado": "pendiente",
       "partner_id": "naranja-tours",
-      "contacto_ids": ["coen-vd-akker"],
+      "contacto_ids": [
+        "coen-vd-akker"
+      ],
       "venue_id": null,
       "venue_nombre": "Verzamelpunt: Parque México, Condesa",
       "hora": "06:00",
-      "precio": {"mxn": 1900, "descuento_nv": "25%"},
+      "precio": {
+        "mxn": 1900,
+        "descuento_nv": "25%"
+      },
       "descripcion": "Wandeltour",
       "detalle": "Incl: transport, entree, fruit, snacks, BBQ, Wijn/fris/water",
       "tier_promocion": "mediano",
@@ -358,7 +473,10 @@
       "flyer_responsable": "proveedor",
       "flyer_responsable_nombre": "Coen",
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": false
@@ -370,7 +488,9 @@
       "fecha_exacta": false,
       "estado": "pendiente",
       "partner_id": "holland-wafels",
-      "contacto_ids": ["koen-houwen"],
+      "contacto_ids": [
+        "koen-houwen"
+      ],
       "venue_id": "holland-wafels",
       "hora": null,
       "precio": null,
@@ -391,10 +511,14 @@
       "fecha": "2026-06-14",
       "estado": "pendiente",
       "partner_id": "holland-wafels",
-      "contacto_ids": ["koen-houwen"],
+      "contacto_ids": [
+        "koen-houwen"
+      ],
       "venue_id": "holland-wafels",
       "hora": "14:00",
-      "precio": {"mxn": 0},
+      "precio": {
+        "mxn": 0
+      },
       "descripcion": "WK poule wedstrijd",
       "detalle": "Grote schermen, Hollands snacks",
       "tier_promocion": "regular",
@@ -402,7 +526,10 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": true,
       "eventbrite": false,
       "condicional": false
@@ -413,10 +540,14 @@
       "fecha": "2026-06-20",
       "estado": "pendiente",
       "partner_id": "holland-wafels",
-      "contacto_ids": ["koen-houwen"],
+      "contacto_ids": [
+        "koen-houwen"
+      ],
       "venue_id": "holland-wafels",
       "hora": "11:00",
-      "precio": {"mxn": 0},
+      "precio": {
+        "mxn": 0
+      },
       "descripcion": "WK poule wedstrijd",
       "detalle": "Grote schermen, Hollands snacks",
       "tier_promocion": "regular",
@@ -424,7 +555,10 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": true,
       "eventbrite": false,
       "condicional": false
@@ -435,10 +569,14 @@
       "fecha": "2026-06-26",
       "estado": "pendiente",
       "partner_id": "holland-wafels",
-      "contacto_ids": ["koen-houwen"],
+      "contacto_ids": [
+        "koen-houwen"
+      ],
       "venue_id": "holland-wafels",
       "hora": "17:00",
-      "precio": {"mxn": 0},
+      "precio": {
+        "mxn": 0
+      },
       "descripcion": "WK poule wedstrijd",
       "detalle": "Grote schermen, Hollands snacks",
       "tier_promocion": "regular",
@@ -446,7 +584,10 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": true,
       "eventbrite": false,
       "condicional": false
@@ -459,10 +600,14 @@
       "nota_fecha": "29/30 Juni",
       "estado": "pendiente",
       "partner_id": "holland-wafels",
-      "contacto_ids": ["koen-houwen"],
+      "contacto_ids": [
+        "koen-houwen"
+      ],
       "venue_id": "holland-wafels",
       "hora": null,
-      "precio": {"mxn": 0},
+      "precio": {
+        "mxn": 0
+      },
       "descripcion": "WK 32e finale wedstrijd",
       "detalle": "Grote schermen, Hollands snacks",
       "tier_promocion": "regular",
@@ -470,7 +615,10 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": true,
@@ -484,10 +632,14 @@
       "nota_fecha": "Juli - fecha depende del fixture",
       "estado": "pendiente",
       "partner_id": "holland-wafels",
-      "contacto_ids": ["koen-houwen"],
+      "contacto_ids": [
+        "koen-houwen"
+      ],
       "venue_id": "holland-wafels",
       "hora": null,
-      "precio": {"mxn": 0},
+      "precio": {
+        "mxn": 0
+      },
       "descripcion": "WK 16e/8e finale wedstrijd",
       "detalle": "Grote schermen, Hollands snacks",
       "tier_promocion": "regular",
@@ -495,7 +647,10 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": true,
@@ -509,11 +664,15 @@
       "nota_fecha": "Excel dice 'Augustus' en Sheet1, 'Hoja1' dice '4 Oktober'",
       "estado": "pendiente",
       "partner_id": "vicky-rodriguez-guia",
-      "contacto_ids": ["vicky-rodriguez"],
+      "contacto_ids": [
+        "vicky-rodriguez"
+      ],
       "venue_id": null,
       "venue_nombre": "Castillo de Chapultepec",
       "hora": null,
-      "precio": {"mxn": 0},
+      "precio": {
+        "mxn": 0
+      },
       "descripcion": "Rondleiding Castillo Chapultepec (NL) met gids",
       "detalle": null,
       "tier_promocion": "regular",
@@ -521,7 +680,10 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": false
@@ -533,7 +695,9 @@
       "fecha_exacta": false,
       "estado": "pendiente",
       "partner_id": "popo-redactie",
-      "contacto_ids": ["paul-vd-voort"],
+      "contacto_ids": [
+        "paul-vd-voort"
+      ],
       "venue_id": null,
       "hora": null,
       "precio": null,
@@ -544,7 +708,11 @@
       "flyer_responsable": "proveedor",
       "flyer_responsable_nombre": "Paul",
       "delegado": false,
-      "canales": ["whatsapp", "rrss", "email"],
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
@@ -556,10 +724,14 @@
       "fecha": "2026-11-01",
       "estado": "pendiente",
       "partner_id": "holland-wafels",
-      "contacto_ids": ["koen-houwen"],
+      "contacto_ids": [
+        "koen-houwen"
+      ],
       "venue_id": "holland-wafels",
       "hora": "15:00",
-      "precio": {"mxn": 0},
+      "precio": {
+        "mxn": 0
+      },
       "descripcion": "GP F1 México",
       "detalle": "Grote schermen, Hollands snacks",
       "tier_promocion": "regular",
@@ -567,7 +739,10 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss"],
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
@@ -579,11 +754,16 @@
       "fecha": "2026-12-05",
       "estado": "pendiente",
       "partner_id": "de-sprinkhaan",
-      "contacto_ids": ["mirjam-van-vliet"],
+      "contacto_ids": [
+        "mirjam-van-vliet"
+      ],
       "venue_id": null,
       "venue_nombre": "Snowapple (según Hoja1)",
       "hora": "11:00",
-      "precio": {"nino": 100, "adulto": 200},
+      "precio": {
+        "nino": 100,
+        "adulto": 200
+      },
       "descripcion": "Sinterklaas voor kinderen",
       "detalle": "Sinterklaas feest, knutselen, dansen, zingen, muziek",
       "tier_promocion": "grande",
@@ -591,7 +771,14 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 3,
       "delegado": false,
-      "canales": ["flyer", "reel", "eventbrite", "whatsapp", "rrss", "email"],
+      "canales": [
+        "flyer",
+        "reel",
+        "eventbrite",
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
       "reel_post": true,
       "eventbrite": true,
       "condicional": false,
@@ -604,7 +791,9 @@
       "fecha_exacta": false,
       "estado": "pendiente",
       "partner_id": "popo-redactie",
-      "contacto_ids": ["paul-vd-voort"],
+      "contacto_ids": [
+        "paul-vd-voort"
+      ],
       "venue_id": null,
       "hora": null,
       "precio": null,
@@ -615,7 +804,11 @@
       "flyer_responsable": "proveedor",
       "flyer_responsable_nombre": "Paul",
       "delegado": false,
-      "canales": ["whatsapp", "rrss", "email"],
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
@@ -629,10 +822,14 @@
       "nota_fecha": "Enero 2027 - fecha exacta por definir",
       "estado": "pendiente",
       "partner_id": "embajada-nl",
-      "contacto_ids": ["rocco-van-velzen"],
+      "contacto_ids": [
+        "rocco-van-velzen"
+      ],
       "venue_id": "embajada-nl",
       "hora": "19:00",
-      "precio": {"mxn": 200},
+      "precio": {
+        "mxn": 200
+      },
       "descripcion": "Nieuwjaars Receptie",
       "detalle": "Incl: borrel hap/drankjes. Eventbrite link toevoegen",
       "tier_promocion": "mediano",
@@ -640,7 +837,11 @@
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
       "delegado": false,
-      "canales": ["whatsapp", "rrss", "email"],
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
       "reel_post": true,
       "eventbrite": true,
       "condicional": false

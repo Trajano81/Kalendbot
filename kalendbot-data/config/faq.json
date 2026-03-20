@@ -4,7 +4,7 @@
   "faqs": [
     {
       "id": "total-eventos",
-      "keywords": ["cuántos eventos", "cuantos eventos", "total eventos", "número de eventos", "numero de eventos"],
+      "keywords": ["cuántos eventos hay", "cuantos eventos hay", "total de eventos", "total eventos del calendario", "número de eventos hay", "numero de eventos hay"],
       "respuesta": "El calendario 2026 tiene 31 eventos: 2 recurrentes (Pub Quiz mensual y Vrijmibo mensual) y 29 eventos únicos."
     },
     {
@@ -14,7 +14,7 @@
     },
     {
       "id": "que-es-nv",
-      "keywords": ["qué es nv", "que es nv", "nv mexico", "asociación neerlandesa", "asociacion neerlandesa"],
+      "keywords": ["qué es nv mexico", "que es nv mexico", "qué es la nv", "que es la nv", "asociación neerlandesa", "asociacion neerlandesa"],
       "respuesta": "NV Mexico (Nederlandse Vereniging in Mexico) es la Asociación Neerlandesa en México. Coordina eventos culturales y sociales para la comunidad neerlandesa en México."
     },
     {

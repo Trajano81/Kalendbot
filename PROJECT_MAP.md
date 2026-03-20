@@ -39,7 +39,8 @@ KalendBot/
 │
 ├── docs/                         # Documentación de desarrollo
 │   ├── issues-cli-testing-001.md # Sesión 1: ISSUE-01 a 05 (CLI phone, recursion, memoria, tools frágiles, RulesEngine)
-│   └── issues-cli-testing-002.md # Sesión 2: OBS-01 a 05 (fuzzy matching, conteo Koen, conflictos OK, estados evento, FAQ)
+│   ├── issues-cli-testing-002.md # Sesión 2: OBS-01 a 05 (fuzzy matching, conteo Koen, conflictos OK, estados evento, FAQ)
+│   └── issues-cli-testing-003.md # Sesión 3: Validación OBS-01/04/05 fixes — 25/25 tests PASS
 │
 ├── .claude/memory/               # Memoria persistente de Claude Code
 │   ├── MEMORY.md                 # Índice de memorias
@@ -116,11 +117,11 @@ KalendBot/
 ### Fase 1: Estabilización del agente (actual)
 > Objetivo: que el agente funcione correctamente vía CLI antes de conectar WhatsApp.
 
-- [ ] OBS-01: Fuzzy matching en ContactManager
+- [x] OBS-01: Fuzzy matching en ContactManager
 - [ ] OBS-02: Verificar asignación Nations League
-- [ ] OBS-04: Sistema de estados de eventos
-- [ ] OBS-05: FAQ document para ahorro de tokens
-- [ ] Testing CLI: recorrer todos los escenarios (CRUD eventos, conflictos, flyers, reglas)
+- [x] OBS-04: Sistema de estados de eventos
+- [x] OBS-05: FAQ document para ahorro de tokens
+- [ ] Testing CLI sesión 003: validar OBS-01/04/05 fixes + escenarios pendientes
 
 ### Fase 2: Integración WhatsApp — Evolution API
 > Objetivo: recibir y responder mensajes reales de WhatsApp.
