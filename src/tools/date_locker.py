@@ -5,7 +5,9 @@ Bloquea/desbloquea fechas con lock optimista.
 import json
 import os
 from datetime import datetime
-from langchain_core.tools import Tool
+from typing import Optional
+from langchain_core.tools import StructuredTool
+from pydantic import BaseModel, Field
 
 DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
 
@@ -22,29 +24,20 @@ def _save_calendar(data: dict, year: int = 2026):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def date_locker(action_json: str) -> str:
-    """
-    Bloquea o desbloquea una fecha para un evento.
-    Input JSON:
-      - action: "lock" | "unlock" | "check"
-      - event_id: ID del evento
-      - fecha: fecha a bloquear/verificar (YYYY-MM-DD)
-      - year: (opcional, default 2026)
-    """
-    action_json = action_json.strip()
-    try:
-        params = json.loads(action_json)
-    except json.JSONDecodeError:
-        params = {"action": action_json}
+class DateLockerInput(BaseModel):
+    action: str = Field(description="Acción: lock, unlock, check")
+    event_id: str = Field(description="ID del evento")
+    fecha: Optional[str] = Field(default=None, description="Fecha en formato YYYY-MM-DD (requerida para lock y check)")
+    year: int = Field(default=2026, description="Año del calendario")
 
-    action = params.get("action", "check")
-    event_id = params.get("event_id")
-    fecha = params.get("fecha")
-    year = params.get("year", 2026)
 
-    if not event_id:
-        return "Error: Falta event_id"
-
+def date_locker(
+    action: str,
+    event_id: str,
+    fecha: Optional[str] = None,
+    year: int = 2026,
+) -> str:
+    """Bloquea, desbloquea o verifica fechas para eventos."""
     try:
         cal = _load_calendar(year)
     except FileNotFoundError:
@@ -53,7 +46,6 @@ def date_locker(action_json: str) -> str:
     eventos = cal.get("eventos", [])
 
     if action == "check":
-        # Verificar si una fecha está libre
         if not fecha:
             return "Error: Falta fecha para verificar"
         conflictos = []
@@ -67,12 +59,10 @@ def date_locker(action_json: str) -> str:
     elif action == "lock":
         if not fecha:
             return "Error: Falta fecha para bloquear"
-        # Verificar conflictos primero
         for e in eventos:
             if e.get("fecha") == fecha and e.get("estado") == "confirmado" and e["id"] != event_id:
                 return f"CONFLICTO: No se puede bloquear {fecha}. Ya está confirmado para {e['id']}: {e['nombre']}"
 
-        # Bloquear
         for e in eventos:
             if e["id"] == event_id:
                 e["fecha_confirmada"] = fecha
@@ -96,12 +86,9 @@ def date_locker(action_json: str) -> str:
     return f"Acción desconocida: {action}. Opciones: lock, unlock, check"
 
 
-date_locker_tool = Tool(
+date_locker_tool = StructuredTool.from_function(
     name="DateLocker",
-    description="""Bloquea, desbloquea o verifica fechas para eventos.
-    Input: JSON con 'action' (lock, unlock, check), 'event_id', 'fecha' (YYYY-MM-DD).
-    Usa lock para confirmar una fecha (verifica conflictos antes de bloquear).
-    Usa check para verificar si una fecha está disponible.
-    Usa unlock para liberar una fecha confirmada.""",
+    description="Bloquea, desbloquea o verifica fechas para eventos. Acciones: lock (confirmar fecha), unlock (liberar), check (verificar disponibilidad).",
     func=date_locker,
+    args_schema=DateLockerInput,
 )
