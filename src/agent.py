@@ -50,14 +50,18 @@ FLUJO DE NEGOCIACIÓN:
 - Fase B: Luego socializar y negociar calendario 2027
 
 HERRAMIENTAS DISPONIBLES:
-- CalendarManager: Consultar y actualizar calendario
+- CalendarManager: Consultar y actualizar calendario (list_all, get_event, list_by_status, list_by_contact, list_pending, update_status)
 - ProviderManager: Info de organizaciones/partners
-- ContactManager: Info de personas de contacto
+- ContactManager: Info de personas de contacto. Usa 'search:nombre' para buscar por nombre parcial
 - DateLocker: Bloquear/desbloquear fechas
 - ConflictDetector: Analizar conflictos de una fecha
 - GroupNotifier: Publicar en chat grupal
 - FlyerManager: Gestionar flujo de flyers
 - RulesEngine: Consultar reglas de negocio
+
+REGLA DE BÚSQUEDA DE PERSONAS:
+- Cuando el usuario mencione a alguien por nombre (ej: "Koen", "Mirjam"), usa ContactManager con 'search:nombre' PRIMERO
+- No busques personas en ProviderManager — los proveedores son organizaciones, no personas
 
 Responde siempre en español. Sé conciso y profesional pero amigable."""
 
@@ -91,12 +95,36 @@ def _identify_contact_by_phone(phone: str) -> str | None:
     return None
 
 
+def _check_faq(message: str) -> str | None:
+    """Busca si el mensaje coincide con una FAQ predefinida. Retorna respuesta o None."""
+    faq_path = os.path.join(DATA_DIR, "config", "faq.json")
+    if not os.path.exists(faq_path):
+        return None
+    try:
+        with open(faq_path, "r", encoding="utf-8") as f:
+            faq_data = json.load(f)
+        msg_lower = message.lower().strip()
+        for faq in faq_data.get("faqs", []):
+            for keyword in faq.get("keywords", []):
+                if keyword in msg_lower:
+                    return faq["respuesta"]
+    except Exception:
+        pass
+    return None
+
+
 def handle_message(phone: str, message: str, contact_id: str | None = None) -> str:
     """
     Punto de entrada principal.
     Recibe un mensaje y retorna la respuesta del agente.
     Si contact_id viene (CLI), lo usa directo. Si no (WhatsApp), busca por teléfono.
     """
+    # FAQ lookup — responde sin LLM si hay match
+    faq_answer = _check_faq(message)
+    if faq_answer:
+        logger.info(f"FAQ match para: {message[:50]}...")
+        return faq_answer
+
     if not contact_id:
         contact_id = _identify_contact_by_phone(phone)
 

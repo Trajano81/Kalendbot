@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "descripcion": "Respuestas predefinidas para preguntas frecuentes. Evita llamadas al LLM para queries comunes.",
+  "faqs": [
+    {
+      "id": "total-eventos",
+      "keywords": ["cuántos eventos", "cuantos eventos", "total eventos", "número de eventos", "numero de eventos"],
+      "respuesta": "El calendario 2026 tiene 31 eventos: 2 recurrentes (Pub Quiz mensual y Vrijmibo mensual) y 29 eventos únicos."
+    },
+    {
+      "id": "content-manager",
+      "keywords": ["content manager", "quién maneja contenido", "quien maneja contenido", "responsable contenido", "responsable de flyers"],
+      "respuesta": "Hanna van Rijsse es la Content Manager de NV Mexico. Es responsable de los flyers cuando no se indica otro responsable en el evento."
+    },
+    {
+      "id": "que-es-nv",
+      "keywords": ["qué es nv", "que es nv", "nv mexico", "asociación neerlandesa", "asociacion neerlandesa"],
+      "respuesta": "NV Mexico (Nederlandse Vereniging in Mexico) es la Asociación Neerlandesa en México. Coordina eventos culturales y sociales para la comunidad neerlandesa en México."
+    },
+    {
+      "id": "total-contactos",
+      "keywords": ["cuántos contactos", "cuantos contactos", "total contactos", "número de contactos"],
+      "respuesta": "Hay 11 contactos registrados: personas físicas responsables de coordinar los distintos eventos del calendario."
+    },
+    {
+      "id": "total-proveedores",
+      "keywords": ["cuántos proveedores", "cuantos proveedores", "total proveedores", "número de proveedores"],
+      "respuesta": "Hay 9 proveedores/partners registrados: organizaciones que colaboran con NV Mexico para los eventos."
+    },
+    {
+      "id": "evento-grande",
+      "keywords": ["evento más grande", "evento mas grande", "evento principal", "eventos grandes"],
+      "respuesta": "Los dos eventos grandes (tier 'grande') son Koningsdag (mayo) y Sinterklaas (diciembre). Ambos requieren 3 oleadas de flyers, reel, Eventbrite y todos los canales de comunicación."
+    },
+    {
+      "id": "como-funciona-bot",
+      "keywords": ["cómo funciona", "como funciona", "qué haces", "que haces", "para qué sirves", "para que sirves"],
+      "respuesta": "Soy KalendBot, el asistente de calendario de NV Mexico. Te ayudo a: consultar el calendario de eventos, verificar conflictos de fechas, coordinar con proveedores/contactos, gestionar estados de eventos y manejar el flujo de flyers promocionales."
+    }
+  ]
+}

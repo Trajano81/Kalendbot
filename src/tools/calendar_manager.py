@@ -11,6 +11,8 @@ from pydantic import BaseModel, Field
 
 DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
 
+VALID_STATUSES = {"pendiente", "confirmado", "cancelado"}
+
 
 def _load_calendar(year: int = 2026) -> dict:
     path = os.path.join(DATA_DIR, f"calendario-{year}.json")
@@ -26,11 +28,11 @@ def _save_calendar(data: dict, year: int = 2026):
 
 class CalendarManagerInput(BaseModel):
     action: str = Field(
-        description="Acción a ejecutar: list_all, get_event, list_by_status, list_by_contact, list_pending, update_status"
+        description="Acción a ejecutar: list_all, get_event, list_by_status, list_by_contact, list_pending, list_upcoming, update_status"
     )
     year: int = Field(default=2026, description="Año del calendario")
     event_id: Optional[str] = Field(default=None, description="ID del evento (para get_event, update_status)")
-    status: Optional[str] = Field(default=None, description="Estado del evento (para list_by_status, update_status)")
+    status: Optional[str] = Field(default=None, description="Estado: pendiente, confirmado, cancelado (para list_by_status, update_status)")
     contact_id: Optional[str] = Field(default=None, description="ID del contacto (para list_by_contact)")
 
 
@@ -84,20 +86,49 @@ def calendar_manager(
         return "\n".join([f"{e['id']}: {e['nombre']} — {e.get('fecha', e.get('regla', 'N/A'))}" for e in filtered])
 
     elif action == "list_pending":
+        today = datetime.now().strftime("%Y-%m-%d")
         pending = [e for e in all_events if e.get("estado") == "pendiente"]
-        pending.sort(key=lambda e: e.get("fecha", "9999-12-31"))
-        if not pending:
-            return "No hay eventos pendientes"
+        # Separar en futuros y pasados
+        future = [e for e in pending if e.get("fecha", e.get("fecha_inicio", "9999-12-31")) >= today]
+        past = [e for e in pending if e.get("fecha", e.get("fecha_inicio", "9999-12-31")) < today]
+        future.sort(key=lambda e: e.get("fecha", e.get("fecha_inicio", "9999-12-31")))
+        past.sort(key=lambda e: e.get("fecha", e.get("fecha_inicio", "9999-12-31")))
+
         lines = []
-        for e in pending:
-            exacta = "" if e.get("fecha_exacta", True) else " (fecha aproximada)"
-            contactos = ", ".join(e.get("contacto_ids", []))
-            lines.append(f"{e.get('fecha', 'sin fecha')}{exacta} | {e['nombre']} | contacto: {contactos}")
+        if future:
+            lines.append(f"═══ PENDIENTES FUTUROS ({len(future)}) ═══")
+            for e in future:
+                exacta = "" if e.get("fecha_exacta", True) else " (aprox)"
+                contactos = ", ".join(e.get("contacto_ids", []))
+                lines.append(f"{e.get('fecha', e.get('fecha_inicio', 'sin fecha'))}{exacta} | {e['nombre']} | {contactos}")
+        if past:
+            lines.append(f"\n═══ PENDIENTES PASADOS — requieren actualización ({len(past)}) ═══")
+            for e in past:
+                contactos = ", ".join(e.get("contacto_ids", []))
+                lines.append(f"⚠️ {e.get('fecha', 'sin fecha')} | {e['nombre']} | {contactos}")
+
+        if not lines:
+            return "No hay eventos pendientes"
+        return "\n".join(lines)
+
+    elif action == "list_upcoming":
+        today = datetime.now().strftime("%Y-%m-%d")
+        upcoming = [e for e in all_events if e.get("fecha", e.get("fecha_inicio", "0000-01-01")) >= today and e.get("estado") != "cancelado"]
+        upcoming.sort(key=lambda e: e.get("fecha", e.get("fecha_inicio", "9999-12-31")))
+        if not upcoming:
+            return "No hay eventos próximos"
+        lines = []
+        for e in upcoming:
+            estado = e.get("estado", "desconocido").upper()
+            exacta = "" if e.get("fecha_exacta", True) else " (aprox)"
+            lines.append(f"[{estado}] {e.get('fecha', e.get('fecha_inicio', 'sin fecha'))}{exacta} | {e['nombre']}")
         return "\n".join(lines)
 
     elif action == "update_status":
         if not event_id or not status:
             return "Error: Faltan event_id y/o status"
+        if status not in VALID_STATUSES:
+            return f"Error: Estado '{status}' no válido. Opciones: {', '.join(sorted(VALID_STATUSES))}"
         for e in all_events:
             if e["id"] == event_id:
                 old_status = e.get("estado")
@@ -108,12 +139,12 @@ def calendar_manager(
         return f"Evento '{event_id}' no encontrado"
 
     else:
-        return f"Acción desconocida: {action}. Opciones: list_all, get_event, list_by_status, list_by_contact, list_pending, update_status"
+        return f"Acción desconocida: {action}. Opciones: list_all, get_event, list_by_status, list_by_contact, list_pending, list_upcoming, update_status"
 
 
 calendar_manager_tool = StructuredTool.from_function(
     name="CalendarManager",
-    description="Lee y actualiza el calendario de eventos de NV Mexico. Acciones: list_all, get_event, list_by_status, list_by_contact, list_pending, update_status.",
+    description="Lee y actualiza el calendario de eventos de NV Mexico. Acciones: list_all, get_event, list_by_status, list_by_contact, list_pending (solo pendientes, separados en futuros/pasados), list_upcoming (todos los futuros no cancelados), update_status (estados: pendiente/confirmado/cancelado).",
     func=calendar_manager,
     args_schema=CalendarManagerInput,
 )
