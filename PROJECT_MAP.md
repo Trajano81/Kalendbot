@@ -38,8 +38,8 @@ KalendBot/
 │   └── memories/                 # Memorias de conversación (runtime, en .gitignore)
 │
 ├── docs/                         # Documentación de desarrollo
-│   ├── issues-cli-testing-001.md # 5 issues de primera sesión de testing
-│   └── issues-cli-testing-002.md # 5 observaciones de segunda sesión de testing
+│   ├── issues-cli-testing-001.md # Sesión 1: ISSUE-01 a 05 (CLI phone, recursion, memoria, tools frágiles, RulesEngine)
+│   └── issues-cli-testing-002.md # Sesión 2: OBS-01 a 05 (fuzzy matching, conteo Koen, conflictos OK, estados evento, FAQ)
 │
 ├── .claude/memory/               # Memoria persistente de Claude Code
 │   ├── MEMORY.md                 # Índice de memorias
@@ -74,6 +74,28 @@ KalendBot/
 - [ ] OBS-04: Sistema de estados de eventos (pendiente/confirmado/cancelado)
 - [ ] OBS-05: FAQ document para ahorro de tokens
 - [ ] Integración WhatsApp vía Evolution API
+
+---
+
+## Issues y Observaciones
+
+### Sesión 1 → [docs/issues-cli-testing-001.md](docs/issues-cli-testing-001.md)
+| ID | Descripción | Severidad | Estado |
+|----|-------------|-----------|--------|
+| ISSUE-01 | CLI phone simulation rota — contactos simulados nunca matchean | Alta | ✅ Resuelto |
+| ISSUE-02 | Recursion limit por tool call loop infinito | Alta | ✅ Resuelto |
+| ISSUE-03 | Memoria asignada a contacto incorrecto (`unknown-jsse`) | Alta | ✅ Resuelto |
+| ISSUE-04 | Tools con input multi-parámetro son frágiles (Tool → StructuredTool) | Alta | ✅ Resuelto |
+| ISSUE-05 | RulesEngine recursión interna en query "all" | Media | ✅ Resuelto |
+
+### Sesión 2 → [docs/issues-cli-testing-002.md](docs/issues-cli-testing-002.md)
+| ID | Descripción | Severidad | Estado |
+|----|-------------|-----------|--------|
+| OBS-01 | Agente no encuentra "Koen" por nombre parcial — falta fuzzy matching | Alta | 🔲 Pendiente |
+| OBS-02 | Discrepancia conteo eventos Koen (10 vs 9) — verificar Nations League | Media | 🔲 Pendiente |
+| OBS-03 | Verificación de conflictos 5 de mayo funciona correctamente | N/A | ✅ OK |
+| OBS-04 | list_pending muestra todo sin distinción de estado | Alta | 🔲 Pendiente |
+| OBS-05 | Consumo excesivo de tokens en preguntas frecuentes | Media | 🔲 Pendiente |
 
 ---
 
