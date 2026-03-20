@@ -200,35 +200,6 @@
       "condicional": false
     },
     {
-      "id": "nations-league",
-      "nombre": "Nations League: Nederland - Spanje",
-      "fecha": "2026-03-23",
-      "estado": "pendiente",
-      "partner_id": "holland-wafels",
-      "contacto_ids": [
-        "koen-houwen"
-      ],
-      "venue_id": "holland-wafels",
-      "hora": null,
-      "precio": {
-        "mxn": 0
-      },
-      "descripcion": "Halve finale Nations League",
-      "detalle": "Grote schermen, Hollands snacks",
-      "tier_promocion": "regular",
-      "flyer_responsable": "nv",
-      "flyer_oleadas": 1,
-      "delegado": false,
-      "canales": [
-        "whatsapp",
-        "rrss"
-      ],
-      "reel_post": false,
-      "eventbrite": false,
-      "condicional": false,
-      "nota": "Aparece en Hoja1 del Excel pero no en Sheet1 principal"
-    },
-    {
       "id": "groot-nederlands-dictee",
       "nombre": "Groot Nederlands Dictee",
       "fecha": "2026-03-01",
