@@ -5,7 +5,9 @@ Gestiona el flujo de flyers: solicitar, rastrear aprobación, programar oleadas.
 import json
 import os
 from datetime import datetime
-from langchain_core.tools import Tool
+from typing import Optional
+from langchain_core.tools import StructuredTool
+from pydantic import BaseModel, Field
 
 DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
 
@@ -17,29 +19,22 @@ CONTENT_MANAGER = {
 }
 
 
-def flyer_manager(action_json: str) -> str:
-    """
-    Gestiona el flujo de flyers para eventos.
-    Input JSON:
-      - action: "check_responsibility" | "get_status" | "request_flyer" | "approve" | "reject"
-      - event_id: ID del evento
-      - year: (opcional, default 2026)
-      - feedback: (para reject, motivo del rechazo)
-    """
-    action_json = action_json.strip()
-    try:
-        params = json.loads(action_json)
-    except json.JSONDecodeError:
-        params = {"action": action_json}
+class FlyerManagerInput(BaseModel):
+    action: str = Field(
+        description="Acción: check_responsibility, get_status, request_flyer, approve, reject"
+    )
+    event_id: str = Field(description="ID del evento")
+    year: int = Field(default=2026, description="Año del calendario")
+    feedback: Optional[str] = Field(default=None, description="Motivo del rechazo (para action=reject)")
 
-    action = params.get("action", "check_responsibility")
-    event_id = params.get("event_id")
-    year = params.get("year", 2026)
 
-    if not event_id:
-        return "Error: Falta event_id"
-
-    # Cargar evento del calendario
+def flyer_manager(
+    action: str,
+    event_id: str,
+    year: int = 2026,
+    feedback: Optional[str] = None,
+) -> str:
+    """Gestiona el flujo de flyers para eventos de NV Mexico."""
     cal_path = os.path.join(DATA_DIR, f"calendario-{year}.json")
     try:
         with open(cal_path, "r", encoding="utf-8") as f:
@@ -124,31 +119,29 @@ def flyer_manager(action_json: str) -> str:
         iteraciones = evento.get("flyer_revisiones", 0) + 1
         evento["flyer_status"] = "rechazado"
         evento["flyer_revisiones"] = iteraciones
-        feedback = params.get("feedback", "sin feedback")
-        evento["flyer_ultimo_feedback"] = feedback
+        fb = feedback or "sin feedback"
+        evento["flyer_ultimo_feedback"] = fb
         with open(cal_path, "w", encoding="utf-8") as f:
             json.dump(cal, f, ensure_ascii=False, indent=2)
 
         if iteraciones >= 3:
             return (
                 f"Flyer RECHAZADO (iteración {iteraciones}/3). MÁXIMO ALCANZADO.\n"
-                f"Feedback: {feedback}\n"
+                f"Feedback: {fb}\n"
                 f"ESCALAR: se necesita intervención manual para el diseño."
             )
         return (
             f"Flyer RECHAZADO (iteración {iteraciones}/3).\n"
-            f"Feedback: {feedback}\n"
+            f"Feedback: {fb}\n"
             f"Enviar feedback al responsable para corrección."
         )
 
     return f"Acción desconocida: {action}"
 
 
-flyer_manager_tool = Tool(
+flyer_manager_tool = StructuredTool.from_function(
     name="FlyerManager",
-    description="""Gestiona el flujo de flyers para eventos de NV Mexico.
-    Input: JSON con 'action' (check_responsibility, get_status, request_flyer, approve, reject)
-    y 'event_id'. Determina si el flyer es responsabilidad del Content Manager de NV (Hanna)
-    o del proveedor. Rastrea estado de aprobación con máximo 3 iteraciones.""",
+    description="Gestiona el flujo de flyers para eventos de NV Mexico. Acciones: check_responsibility, get_status, request_flyer, approve, reject. Máximo 3 iteraciones de rechazo.",
     func=flyer_manager,
+    args_schema=FlyerManagerInput,
 )
