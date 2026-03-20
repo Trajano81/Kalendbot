@@ -91,19 +91,20 @@ def _identify_contact_by_phone(phone: str) -> str | None:
     return None
 
 
-def handle_message(phone: str, message: str) -> str:
+def handle_message(phone: str, message: str, contact_id: str | None = None) -> str:
     """
     Punto de entrada principal.
-    Recibe un mensaje de WhatsApp y retorna la respuesta del agente.
+    Recibe un mensaje y retorna la respuesta del agente.
+    Si contact_id viene (CLI), lo usa directo. Si no (WhatsApp), busca por teléfono.
     """
-    # Identificar contacto por teléfono
-    contact_id = _identify_contact_by_phone(phone)
+    if not contact_id:
+        contact_id = _identify_contact_by_phone(phone)
 
     if not contact_id:
         logger.warning(f"Contacto no identificado para teléfono: {phone}")
         contact_id = f"unknown-{phone[-4:]}"
 
-    logger.info(f"Mensaje de {contact_id} ({phone}): {message[:50]}...")
+    logger.info(f"Mensaje de {contact_id}: {message[:50]}...")
 
     config = {
         "configurable": {"thread_id": contact_id},

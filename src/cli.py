@@ -11,7 +11,7 @@ load_dotenv()
 # Asegurar que src esté en el path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.agent import handle_message, _identify_contact_by_phone
+from src.agent import handle_message
 from src.tools.contact_manager import contact_manager
 from src.tools.calendar_manager import calendar_manager
 
@@ -33,9 +33,6 @@ def main():
         print("Usando contacto genérico 'test-user'")
         contact_id = "test-user"
 
-    # Simular un teléfono para el contacto
-    phone = f"simulated-{contact_id}"
-
     print(f"\nSimulando conversación como '{contact_id}'")
     print("Escribe 'salir' para terminar, 'status' para ver calendario\n")
 
@@ -48,13 +45,13 @@ def main():
 
         if user_input.lower() == "status":
             print("\nEventos pendientes:")
-            print(calendar_manager('{"action": "list_pending"}'))
+            print(calendar_manager(action="list_pending"))
             continue
 
         if not user_input:
             continue
 
-        response = handle_message(phone, user_input)
+        response = handle_message("cli", user_input, contact_id=contact_id)
         print(f"\n[KalendBot]: {response}")
 
 
