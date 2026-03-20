@@ -89,7 +89,7 @@
       "id": "nieuwjaarsreceptie-2026",
       "nombre": "Nieuwjaarsreceptie (incl ALV)",
       "fecha": "2026-01-22",
-      "estado": "pendiente",
+      "estado": "confirmado",
       "partner_id": "embajada-nl",
       "contacto_ids": [
         "rocco-van-velzen"
@@ -113,14 +113,16 @@
       ],
       "reel_post": true,
       "eventbrite": true,
-      "condicional": false
+      "condicional": false,
+      "fecha_confirmada": "2026-01-22",
+      "ultima_actualizacion": "2026-03-20T10:07:16.362759"
     },
     {
       "id": "oproep-bestuursleden",
       "nombre": "Oproep voor nieuwe bestuursleden",
       "fecha": "2026-02-01",
       "fecha_exacta": false,
-      "estado": "pendiente",
+      "estado": "confirmado",
       "partner_id": "nv-mexico",
       "contacto_ids": [
         "rocco-van-velzen"
@@ -141,13 +143,14 @@
       ],
       "reel_post": false,
       "eventbrite": false,
-      "condicional": false
+      "condicional": false,
+      "ultima_actualizacion": "2026-03-20T10:21:53.031184"
     },
     {
       "id": "elfstedentocht",
       "nombre": "Cultuurdag Elfstedentocht",
       "fecha": "2026-01-24",
-      "estado": "pendiente",
+      "estado": "confirmado",
       "partner_id": "de-sprinkhaan",
       "contacto_ids": [
         "mirjam-van-vliet"
@@ -165,13 +168,14 @@
       "canales": [],
       "reel_post": false,
       "eventbrite": false,
-      "condicional": false
+      "condicional": false,
+      "ultima_actualizacion": "2026-03-20T10:21:53.031184"
     },
     {
       "id": "klimtocht-pico-de-aguila",
       "nombre": "Klimtocht: Pico de Águila",
       "fecha": "2026-03-14",
-      "estado": "pendiente",
+      "estado": "confirmado",
       "partner_id": "rene-wieben-guia",
       "contacto_ids": [
         "rene-wieben"
@@ -197,14 +201,16 @@
       ],
       "reel_post": false,
       "eventbrite": false,
-      "condicional": false
+      "condicional": false,
+      "fecha_confirmada": "2026-03-14",
+      "ultima_actualizacion": "2026-03-20T10:16:04.725329"
     },
     {
       "id": "groot-nederlands-dictee",
       "nombre": "Groot Nederlands Dictee",
       "fecha": "2026-03-01",
       "fecha_exacta": false,
-      "estado": "pendiente",
+      "estado": "confirmado",
       "partner_id": "holland-wafels",
       "contacto_ids": [
         "koen-houwen"
@@ -228,7 +234,8 @@
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
-      "texto_social": "📖 Groot Nederlands Dictee\nBen jij een echte taalexpert? Test je spelling en grammatica tijdens het Groot Nederlands Dictee!"
+      "texto_social": "📖 Groot Nederlands Dictee\nBen jij een echte taalexpert? Test je spelling en grammatica tijdens het Groot Nederlands Dictee!",
+      "ultima_actualizacion": "2026-03-20T10:21:53.031184"
     },
     {
       "id": "koningsdag",
