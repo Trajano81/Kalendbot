@@ -1,0 +1,15 @@
+{
+  "id": "naranja-tours",
+  "nombre": "Naranja Tours",
+  "tipo": "operador_turistico",
+  "dependencia": "baja",
+  "nota": "1 evento anual (Tour Iztaccíhuatl). Ofrece 25% descuento para miembros NV.",
+  "riesgos_conocidos": [
+    {
+      "tipo": "climatico",
+      "descripcion": "Tour de montaña afectado por temporada de lluvias (jun-sep)",
+      "meses_riesgo": [6, 7, 8, 9],
+      "accion_bot": "Preguntar por fecha alternativa o plan B por clima"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "año": 2026,
+  "eventos": [
+    {
+      "nombre": "FIFA World Cup 2026 (USA/MEX/CAN)",
+      "tipo": "cuadrienal",
+      "fecha_inicio": "2026-06-11",
+      "fecha_fin": "2026-07-19",
+      "relevancia": "alta",
+      "impacto_calendario": "Eventos de viewing en Holland Wafels si Holanda juega",
+      "notas": "Sede compartida USA/México/Canadá. Holanda en Grupo A."
+    },
+    {
+      "nombre": "F1 GP México",
+      "tipo": "anual",
+      "fecha_estimada": "2026-10-25",
+      "confirmado": false,
+      "relevancia": "alta",
+      "fuente": "FOM calendar"
+    },
+    {
+      "nombre": "Champions League Final",
+      "tipo": "anual",
+      "fecha_estimada": "2026-05-30",
+      "confirmado": false,
+      "relevancia": "media"
+    },
+    {
+      "nombre": "Nations League Semi-Final",
+      "tipo": "bianual",
+      "fecha_estimada": "2026-03-23",
+      "confirmado": false,
+      "relevancia": "media"
+    }
+  ],
+  "ciclos_deportivos": {
+    "mundial_fifa": {"frecuencia": 4, "ultima": 2026, "proxima": 2030},
+    "copa_america": {"frecuencia": 4, "ultima": 2024, "proxima": 2028},
+    "eurocopa": {"frecuencia": 4, "ultima": 2024, "proxima": 2028},
+    "olimpiadas": {"frecuencia": 4, "ultima": 2024, "proxima": 2028}
+  }
+}

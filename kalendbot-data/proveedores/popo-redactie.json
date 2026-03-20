@@ -1,0 +1,8 @@
+{
+  "id": "popo-redactie",
+  "nombre": "Redacción POPO",
+  "tipo": "publicacion",
+  "dependencia": "baja",
+  "nota": "Opera de forma autónoma. 3 ediciones anuales (abril, septiembre, diciembre). Solo requiere check-in para confirmar mes de publicación.",
+  "riesgos_conocidos": []
+}
