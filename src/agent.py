@@ -72,6 +72,25 @@ ESTADOS DE EVENTOS:
 
 Responde siempre en español. Sé conciso y profesional pero amigable."""
 
+ROLE_SUFFIX_CONTACTO = """
+
+RESTRICCIONES DE ROL (contacto):
+Tu usuario actual es '{contact_id}'. Solo puede modificar eventos donde es responsable (aparece en contacto_ids).
+Cuando uses DateLocker, FlyerManager o GroupNotifier, SIEMPRE pasa contact_id='{contact_id}' y role='contacto'.
+Si piden modificar un evento de otro responsable, indica amablemente que no tiene permisos."""
+
+ROLE_SUFFIX_READONLY = """
+
+RESTRICCIONES DE ROL (solo lectura):
+Este usuario solo puede consultar información. NO uses DateLocker, GroupNotifier ni FlyerManager.
+Si piden modificar algo, responde amablemente que no tiene permisos y que contacte al administrador."""
+
+ROLE_SUFFIX_FULL = """
+
+CONTEXTO DE ROL:
+Tu usuario actual es '{contact_id}' con rol '{role}'. Tiene acceso completo.
+Cuando uses DateLocker, FlyerManager o GroupNotifier, SIEMPRE pasa contact_id='{contact_id}' y role='{role}'."""
+
 # Crear agente (compilado una sola vez, el thread_id diferencia contactos)
 agent = create_agent(
     model=llm,
@@ -79,6 +98,19 @@ agent = create_agent(
     system_prompt=SYSTEM_PROMPT,
     checkpointer=checkpointer,
 )
+
+
+def _get_contact_role(contact_id: str) -> str:
+    """Retorna el rol_kalendbot de un contacto. Default: 'contacto' para existentes, 'readonly' para unknown."""
+    if not contact_id or contact_id.startswith("unknown-"):
+        return "readonly"
+    filepath = os.path.join(DATA_DIR, "contactos", f"{contact_id}.json")
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            contact = json.load(f)
+        return contact.get("rol_kalendbot", "contacto")
+    except (FileNotFoundError, json.JSONDecodeError):
+        return "readonly"
 
 
 def _identify_contact_by_phone(phone: str) -> str | None:
@@ -139,7 +171,16 @@ def handle_message(phone: str, message: str, contact_id: str | None = None) -> s
         logger.warning(f"Contacto no identificado para teléfono: {phone}")
         contact_id = f"unknown-{phone[-4:]}"
 
-    logger.info(f"Mensaje de {contact_id}: {message[:50]}...")
+    role = _get_contact_role(contact_id)
+    logger.info(f"Mensaje de {contact_id} (rol: {role}): {message[:50]}...")
+
+    # System prompt dinámico según rol
+    if role == "readonly":
+        dynamic_prompt = SYSTEM_PROMPT + ROLE_SUFFIX_READONLY
+    elif role == "contacto":
+        dynamic_prompt = SYSTEM_PROMPT + ROLE_SUFFIX_CONTACTO.format(contact_id=contact_id)
+    else:
+        dynamic_prompt = SYSTEM_PROMPT + ROLE_SUFFIX_FULL.format(contact_id=contact_id, role=role)
 
     config = {
         "configurable": {"thread_id": contact_id},
@@ -150,7 +191,7 @@ def handle_message(phone: str, message: str, contact_id: str | None = None) -> s
     for attempt in range(max_retries):
         try:
             result = agent.invoke(
-                {"messages": [{"role": "user", "content": message}]},
+                {"messages": [{"role": "system", "content": dynamic_prompt}, {"role": "user", "content": message}]},
                 config=config,
             )
             response = result["messages"][-1].content

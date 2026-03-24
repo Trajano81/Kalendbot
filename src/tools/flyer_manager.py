@@ -26,6 +26,8 @@ class FlyerManagerInput(BaseModel):
     event_id: str = Field(description="ID del evento")
     year: int = Field(default=2026, description="Año del calendario")
     feedback: Optional[str] = Field(default=None, description="Motivo del rechazo (para action=reject)")
+    contact_id: Optional[str] = Field(default=None, description="ID del contacto que ejecuta la acción")
+    role: Optional[str] = Field(default=None, description="Rol del usuario: admin, tester, contacto, readonly")
 
 
 def flyer_manager(
@@ -33,14 +35,26 @@ def flyer_manager(
     event_id: str,
     year: int = 2026,
     feedback: Optional[str] = None,
+    contact_id: Optional[str] = None,
+    role: Optional[str] = None,
 ) -> str:
     """Gestiona el flujo de flyers para eventos de NV Mexico."""
+    # Validación de permisos
+    if role == "readonly":
+        return "No tienes permisos para gestionar flyers. Contacta al administrador."
+
     cal_path = os.path.join(DATA_DIR, f"calendario-{year}.json")
     try:
         with open(cal_path, "r", encoding="utf-8") as f:
             cal = json.load(f)
     except FileNotFoundError:
         return f"Error: No existe calendario para {year}"
+
+    # Para rol 'contacto', verificar permisos en acciones de escritura
+    if role == "contacto" and action in ("request_flyer", "approve", "reject") and contact_id:
+        evento_check = next((e for e in cal.get("eventos", []) + cal.get("eventos_recurrentes", []) if e["id"] == event_id), None)
+        if evento_check and contact_id not in evento_check.get("contacto_ids", []):
+            return f"No tienes permisos para gestionar el flyer de este evento. Solo los responsables pueden hacerlo."
 
     evento = None
     for e in cal.get("eventos", []) + cal.get("eventos_recurrentes", []):

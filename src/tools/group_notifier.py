@@ -6,7 +6,9 @@ import json
 import os
 import logging
 import httpx
-from langchain_core.tools import Tool
+from typing import Optional
+from langchain_core.tools import StructuredTool
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger("kalendbot.group_notifier")
 
@@ -16,12 +18,15 @@ EVOLUTION_INSTANCE = os.getenv("EVOLUTION_INSTANCE_NAME", "kalendbot")
 GROUP_CHAT_ID = os.getenv("KALENDBOT_GROUP_CHAT_ID", "")
 
 
-def group_notifier(message: str) -> str:
+def group_notifier(message: str, role: str = None) -> str:
     """
     Publica un mensaje en el chat grupal de NV Mexico.
     Input: el mensaje de texto a publicar.
     SOLO usar para updates de estado del calendario, nunca para negociación individual.
     """
+    if role == "readonly":
+        return "No tienes permisos para enviar mensajes al grupo. Contacta al administrador."
+
     if not message.strip():
         return "Error: Mensaje vacío"
 
@@ -48,11 +53,14 @@ def group_notifier(message: str) -> str:
         return f"Error enviando al grupo: {str(e)}"
 
 
-group_notifier_tool = Tool(
+class GroupNotifierInput(BaseModel):
+    message: str = Field(description="Texto del mensaje a publicar en el grupo")
+    role: Optional[str] = Field(default=None, description="Rol del usuario: admin, tester, contacto, readonly")
+
+
+group_notifier_tool = StructuredTool.from_function(
     name="GroupNotifier",
-    description="""Publica un mensaje en el chat grupal de NV Mexico.
-    Input: texto del mensaje a publicar.
-    SOLO usar para updates de estado del calendario (confirmaciones, alertas, reportes).
-    NUNCA usar para negociación individual con proveedores.""",
+    description="Publica un mensaje en el chat grupal de NV Mexico. SOLO usar para updates de estado del calendario (confirmaciones, alertas, reportes). NUNCA usar para negociación individual con proveedores.",
     func=group_notifier,
+    args_schema=GroupNotifierInput,
 )

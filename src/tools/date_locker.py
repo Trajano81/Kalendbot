@@ -29,6 +29,8 @@ class DateLockerInput(BaseModel):
     event_id: str = Field(description="ID del evento")
     fecha: Optional[str] = Field(default=None, description="Fecha en formato YYYY-MM-DD (requerida para lock y check)")
     year: int = Field(default=2026, description="Año del calendario")
+    contact_id: Optional[str] = Field(default=None, description="ID del contacto que ejecuta la acción")
+    role: Optional[str] = Field(default=None, description="Rol del usuario: admin, tester, contacto, readonly")
 
 
 def date_locker(
@@ -36,12 +38,24 @@ def date_locker(
     event_id: str,
     fecha: Optional[str] = None,
     year: int = 2026,
+    contact_id: Optional[str] = None,
+    role: Optional[str] = None,
 ) -> str:
     """Bloquea, desbloquea o verifica fechas para eventos."""
+    # Validación de permisos
+    if role == "readonly":
+        return "No tienes permisos para modificar fechas. Contacta al administrador."
+
     try:
         cal = _load_calendar(year)
     except FileNotFoundError:
         return f"Error: No existe calendario para {year}"
+
+    # Para rol 'contacto', verificar que es responsable del evento (solo en lock/unlock)
+    if role == "contacto" and action in ("lock", "unlock") and contact_id:
+        evento = next((e for e in cal.get("eventos", []) if e["id"] == event_id), None)
+        if evento and contact_id not in evento.get("contacto_ids", []):
+            return f"No tienes permisos para modificar este evento. Solo los responsables pueden hacerlo."
 
     eventos = cal.get("eventos", [])
 

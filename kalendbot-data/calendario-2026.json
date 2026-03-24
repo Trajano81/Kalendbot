@@ -308,7 +308,7 @@
       "fecha": "2026-04-01",
       "fecha_exacta": false,
       "nota_fecha": "Abril/Mei según Excel",
-      "estado": "confirmado",
+      "estado": "cancelado",
       "partner_id": "atk",
       "contacto_ids": [
         "anne-schouten"
@@ -336,7 +336,7 @@
       "condicional": false,
       "texto_social": "☀️ Buitendag in Cuernavaca\nZin in een gezellige dag in de buitenlucht?",
       "fecha_confirmada": "2026-04-03",
-      "ultima_actualizacion": "2026-03-24T10:14:09.402621"
+      "ultima_actualizacion": "2026-03-24T10:20:53.614071"
     },
     {
       "id": "popo-abril",
