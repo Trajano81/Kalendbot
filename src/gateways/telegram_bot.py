@@ -18,6 +18,10 @@ logger = logging.getLogger("kalendbot.telegram")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
 
+# Coordinador principal — recibe copia de recordatorios de flyer
+COORDINATOR_ID = "rocco-van-velzen"
+CONTENT_MANAGER_ID = "hanna-van-rijsse"
+
 # Estado temporal de usuarios en proceso de registro
 # { telegram_id: { "phone": str, "step": "awaiting_name" } }
 _pending_registrations: dict[int, dict] = {}
@@ -239,35 +243,71 @@ async def _send_reminders(context: ContextTypes.DEFAULT_TYPE) -> None:
                 admin_resumen.append(f"Confirmación ({dias}d): {evt_nombre}")
                 logger.info(f"Recordatorio confirmación: {evt_id} ({dias}d)")
 
-        # --- TIPO 2: Recordatorio de flyer (basado en flyer_moment) ---
-        flyer_moment = evento.get("flyer_moment", "")
+        # --- TIPO 2: Recordatorio de flyer (basado en flyer_moment + custom) ---
         flyer_resp = evento.get("flyer_responsable", "")
-        if flyer_moment and flyer_moment.lower() != "x" and flyer_resp.lower() != "x":
-            flyer_dias = _parse_flyer_moment(flyer_moment)
-            for dias in flyer_dias:
-                if dias_restantes != dias:
+        flyer_status = evento.get("flyer_status", "no_solicitado")
+
+        # Skip: sin flyer, flyer aprobado, o responsable "ninguno"/"x"
+        if flyer_resp.lower() not in ("nv", "proveedor"):
+            pass  # no tiene flyer, skip
+        elif flyer_status == "aprobado":
+            pass  # flyer listo, no más recordatorios
+        else:
+            # Determinar si hoy toca recordatorio
+            flyer_moment = evento.get("flyer_moment", "")
+            toca_standard = False
+            dias_match = 0
+            if flyer_moment and flyer_moment.lower() != "x":
+                flyer_dias = _parse_flyer_moment(flyer_moment)
+                for dias in flyer_dias:
+                    if dias_restantes == dias:
+                        toca_standard = True
+                        dias_match = dias
+                        break
+
+            # Custom reminder dates (campo separado, no modifica flyer_moment)
+            toca_custom = False
+            custom_dates = evento.get("flyer_reminder_custom", [])
+            for cd in custom_dates:
+                try:
+                    if date.fromisoformat(cd) == hoy:
+                        toca_custom = True
+                        break
+                except ValueError:
                     continue
-                key = f"flyer:{evt_id}:{dias}"
-                if key in sent:
-                    continue
 
-                template = flyer_config.get("mensaje", "Recordatorio de flyer: '{nombre}' el {fecha}. Faltan {dias} días.")
-                mensaje = template.format(nombre=evt_nombre, fecha=evt_fecha, dias=dias)
+            if toca_standard or toca_custom:
+                key_suffix = f"{dias_match}" if toca_standard else f"custom:{hoy.isoformat()}"
+                key = f"flyer:{evt_id}:{key_suffix}"
+                if key not in sent:
+                    template = flyer_config.get("mensaje", "Recordatorio de flyer: '{nombre}' el {fecha}. Faltan {dias} días.")
+                    mensaje = template.format(nombre=evt_nombre, fecha=evt_fecha, dias=dias_restantes)
+                    if flyer_status == "rechazado":
+                        mensaje += "\n⚠️ El flyer fue rechazado. Por favor envía la corrección."
+                    mensaje += "\nSi no apruebas o actualizas el status del flyer, seguirás recibiendo recordatorios."
 
-                # Enviar al responsable del flyer o a los contactos del evento
-                contacto_ids = evento.get("contacto_ids", [])
-                for cid in contacto_ids:
-                    tid = _get_contact_telegram_id(cid)
-                    if tid:
-                        try:
-                            await context.bot.send_message(chat_id=tid, text=mensaje)
-                        except Exception as e:
-                            logger.error(f"Error enviando flyer reminder a {cid}: {e}")
+                    # Destinatarios según responsable
+                    destinatarios = []
+                    if flyer_resp == "proveedor":
+                        destinatarios = list(evento.get("contacto_ids", []))
+                    elif flyer_resp == "nv":
+                        destinatarios = [CONTENT_MANAGER_ID]
+                    # Siempre agregar coordinador (Rocco)
+                    if COORDINATOR_ID not in destinatarios:
+                        destinatarios.append(COORDINATOR_ID)
 
-                _save_sent_reminder(key)
-                enviados_hoy += 1
-                admin_resumen.append(f"Flyer ({dias}d): {evt_nombre}")
-                logger.info(f"Recordatorio flyer: {evt_id} ({dias}d)")
+                    for cid in destinatarios:
+                        tid = _get_contact_telegram_id(cid)
+                        if tid:
+                            try:
+                                await context.bot.send_message(chat_id=tid, text=mensaje)
+                            except Exception as e:
+                                logger.error(f"Error enviando flyer reminder a {cid}: {e}")
+
+                    _save_sent_reminder(key)
+                    enviados_hoy += 1
+                    admin_resumen.append(f"Flyer ({dias_restantes}d): {evt_nombre}")
+                    logger.info(f"Recordatorio flyer: {evt_id} ({key_suffix}) → {destinatarios}")
 
         # --- TIPO 3: Recordatorio grupal ---
         if group_chat_id:

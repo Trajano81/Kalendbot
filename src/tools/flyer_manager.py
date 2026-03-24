@@ -4,12 +4,17 @@ Gestiona el flujo de flyers: solicitar, rastrear aprobación, programar oleadas.
 """
 import json
 import os
+import logging
+import httpx
 from datetime import datetime
 from typing import Optional
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 
+logger = logging.getLogger("kalendbot.flyer_manager")
+
 DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
+COORDINATOR_ID = "rocco-van-velzen"
 
 # Content Manager de NV Mexico
 CONTENT_MANAGER = {
@@ -19,13 +24,36 @@ CONTENT_MANAGER = {
 }
 
 
+def _send_telegram_dm(contact_id: str, message: str) -> None:
+    """Envía DM a un contacto via Telegram Bot API. No rompe el flujo si falla."""
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    if not bot_token:
+        logger.warning(f"Sin TELEGRAM_BOT_TOKEN, no se envió DM a {contact_id}")
+        return
+    filepath = os.path.join(DATA_DIR, "contactos", f"{contact_id}.json")
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            contact = json.load(f)
+        tid = contact.get("telegram_id")
+        if not tid:
+            logger.warning(f"Contacto {contact_id} sin telegram_id")
+            return
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+        resp = httpx.post(url, json={"chat_id": tid, "text": message}, timeout=10)
+        resp.raise_for_status()
+        logger.info(f"DM enviado a {contact_id}")
+    except Exception as e:
+        logger.error(f"Error enviando DM a {contact_id}: {e}")
+
+
 class FlyerManagerInput(BaseModel):
     action: str = Field(
-        description="Acción: check_responsibility, get_status, request_flyer, approve, reject"
+        description="Acción: check_responsibility, get_status, request_flyer, approve, reject, set_reminder"
     )
     event_id: str = Field(description="ID del evento")
     year: int = Field(default=2026, description="Año del calendario")
     feedback: Optional[str] = Field(default=None, description="Motivo del rechazo (para action=reject)")
+    dates: Optional[str] = Field(default=None, description="Fechas ISO separadas por coma para set_reminder (ej: '2026-04-15,2026-04-20')")
     contact_id: Optional[str] = Field(default=None, description="ID del contacto que ejecuta la acción")
     role: Optional[str] = Field(default=None, description="Rol del usuario: admin, tester, contacto, readonly")
 
@@ -35,6 +63,7 @@ def flyer_manager(
     event_id: str,
     year: int = 2026,
     feedback: Optional[str] = None,
+    dates: Optional[str] = None,
     contact_id: Optional[str] = None,
     role: Optional[str] = None,
 ) -> str:
@@ -51,7 +80,7 @@ def flyer_manager(
         return f"Error: No existe calendario para {year}"
 
     # Para rol 'contacto', verificar permisos en acciones de escritura
-    if role == "contacto" and action in ("request_flyer", "approve", "reject") and contact_id:
+    if role == "contacto" and action in ("request_flyer", "approve", "reject", "set_reminder") and contact_id:
         evento_check = next((e for e in cal.get("eventos", []) + cal.get("eventos_recurrentes", []) if e["id"] == event_id), None)
         if evento_check and contact_id not in evento_check.get("contacto_ids", []):
             return f"No tienes permisos para gestionar el flyer de este evento. Solo los responsables pueden hacerlo."
@@ -127,6 +156,7 @@ def flyer_manager(
         evento["flyer_aprobado_fecha"] = datetime.now().isoformat()
         with open(cal_path, "w", encoding="utf-8") as f:
             json.dump(cal, f, ensure_ascii=False, indent=2)
+        _send_telegram_dm(COORDINATOR_ID, f"Flyer APROBADO para '{evento['nombre']}'. Listo para publicación.")
         return f"Flyer APROBADO para '{evento['nombre']}'. Listo para publicación."
 
     elif action == "reject":
@@ -150,12 +180,33 @@ def flyer_manager(
             f"Enviar feedback al responsable para corrección."
         )
 
+    elif action == "set_reminder":
+        if not dates:
+            return "Error: Debes proporcionar fechas (ej: dates='2026-04-15,2026-04-20')"
+        date_list = [d.strip() for d in dates.split(",") if d.strip()]
+        # Validar formato ISO
+        valid_dates = []
+        for d in date_list:
+            try:
+                datetime.fromisoformat(d)
+                valid_dates.append(d)
+            except ValueError:
+                return f"Error: Fecha inválida '{d}'. Usa formato YYYY-MM-DD."
+        evento["flyer_reminder_custom"] = valid_dates
+        with open(cal_path, "w", encoding="utf-8") as f:
+            json.dump(cal, f, ensure_ascii=False, indent=2)
+        return (
+            f"Recordatorios custom configurados para '{evento['nombre']}':\n"
+            f"Fechas: {', '.join(valid_dates)}\n"
+            f"Estos recordatorios son adicionales a los estándar (flyer_moment)."
+        )
+
     return f"Acción desconocida: {action}"
 
 
 flyer_manager_tool = StructuredTool.from_function(
     name="FlyerManager",
-    description="Gestiona el flujo de flyers para eventos de NV Mexico. Acciones: check_responsibility, get_status, request_flyer, approve, reject. Máximo 3 iteraciones de rechazo.",
+    description="Gestiona el flujo de flyers para eventos de NV Mexico. Acciones: check_responsibility, get_status, request_flyer, approve, reject, set_reminder. set_reminder configura fechas custom de recordatorio (adicionales al flyer_moment estándar). Máximo 3 iteraciones de rechazo.",
     func=flyer_manager,
     args_schema=FlyerManagerInput,
 )
