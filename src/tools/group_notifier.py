@@ -1,8 +1,7 @@
 """
 Tool 6: GroupNotifier
-Publica mensajes en el chat grupal de NV Mexico via Evolution API.
+Publica mensajes en el chat grupal de NV Mexico via Telegram Bot API.
 """
-import json
 import os
 import logging
 import httpx
@@ -12,15 +11,13 @@ from pydantic import BaseModel, Field
 
 logger = logging.getLogger("kalendbot.group_notifier")
 
-EVOLUTION_API_URL = os.getenv("EVOLUTION_API_URL", "http://localhost:8080")
-EVOLUTION_API_KEY = os.getenv("EVOLUTION_API_KEY", "")
-EVOLUTION_INSTANCE = os.getenv("EVOLUTION_INSTANCE_NAME", "kalendbot")
-GROUP_CHAT_ID = os.getenv("KALENDBOT_GROUP_CHAT_ID", "")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_GROUP_CHAT_ID = os.getenv("TELEGRAM_GROUP_CHAT_ID", "")
 
 
 def group_notifier(message: str, role: str = None) -> str:
     """
-    Publica un mensaje en el chat grupal de NV Mexico.
+    Publica un mensaje en el chat grupal de NV Mexico via Telegram.
     Input: el mensaje de texto a publicar.
     SOLO usar para updates de estado del calendario, nunca para negociación individual.
     """
@@ -30,24 +27,27 @@ def group_notifier(message: str, role: str = None) -> str:
     if not message.strip():
         return "Error: Mensaje vacío"
 
-    if not GROUP_CHAT_ID:
-        logger.warning("GROUP_CHAT_ID no configurado. Mensaje no enviado.")
+    # Re-leer en runtime por si fue auto-detectado después del startup
+    group_id = os.getenv("TELEGRAM_GROUP_CHAT_ID", "") or TELEGRAM_GROUP_CHAT_ID
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "") or TELEGRAM_BOT_TOKEN
+
+    if not group_id:
+        logger.warning("TELEGRAM_GROUP_CHAT_ID no configurado. Mensaje no enviado.")
         return f"[MOCK - sin GROUP_CHAT_ID] Mensaje para grupo:\n{message}"
 
-    if not EVOLUTION_API_KEY:
-        logger.warning("EVOLUTION_API_KEY no configurada. Mensaje no enviado.")
-        return f"[MOCK - sin API key] Mensaje para grupo:\n{message}"
+    if not bot_token:
+        logger.warning("TELEGRAM_BOT_TOKEN no configurado. Mensaje no enviado.")
+        return f"[MOCK - sin BOT_TOKEN] Mensaje para grupo:\n{message}"
 
     try:
-        url = f"{EVOLUTION_API_URL}/message/sendText/{EVOLUTION_INSTANCE}"
-        headers = {"apikey": EVOLUTION_API_KEY, "Content-Type": "application/json"}
+        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
         payload = {
-            "number": GROUP_CHAT_ID,
-            "text": message
+            "chat_id": group_id,
+            "text": message,
         }
-        response = httpx.post(url, json=payload, headers=headers, timeout=10)
+        response = httpx.post(url, json=payload, timeout=10)
         response.raise_for_status()
-        return f"Mensaje publicado en grupo exitosamente"
+        return "Mensaje publicado en grupo exitosamente"
     except httpx.HTTPError as e:
         logger.error(f"Error enviando mensaje al grupo: {e}")
         return f"Error enviando al grupo: {str(e)}"
