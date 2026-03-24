@@ -330,7 +330,7 @@ Cada contacto tiene un `rol_kalendbot` en su JSON (`kalendbot-data/contactos/*.j
 
 | ID | Descripción | Estado |
 |----|-------------|--------|
-| OBS-06 | 5 eventos pasados en estado "pendiente" | 🔲 Validar con Rocco en producción |
+| OBS-06 | 5 eventos pasados en estado "pendiente" | ✅ Resuelto — 5 eventos confirmados |
 
 ---
 
@@ -343,7 +343,7 @@ Cada contacto tiene un `rol_kalendbot` en su JSON (`kalendbot-data/contactos/*.j
 - [x] Fix ISSUE-01 a 05
 - [x] Fix OBS-01, 04, 05
 - [x] OBS-02: Nations League eliminado (no estaba en Excel principal)
-- [ ] OBS-06: 5 eventos pasados en "pendiente" — validar con Rocco en producción
+- [x] OBS-06: 5 eventos pasados confirmados (Nieuwjaarsreceptie, Oproep, Elfstedentocht, Klimtocht, Dictee)
 - [ ] Testing CLI: completar escenarios pendientes
 
 ### Fase 2: Integración WhatsApp — Evolution API

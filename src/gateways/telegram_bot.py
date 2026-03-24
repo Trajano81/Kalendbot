@@ -6,8 +6,10 @@ import os
 import re
 import json
 import logging
+from datetime import datetime, time, date
+from zoneinfo import ZoneInfo
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Application, MessageHandler, CommandHandler, CallbackQueryHandler, filters, ContextTypes
+from telegram.ext import Application, MessageHandler, CommandHandler, CallbackQueryHandler, ChatMemberHandler, filters, ContextTypes
 
 from src.agent import handle_message
 
@@ -115,6 +117,201 @@ def _create_contact_json(nombre: str, telefono: str, telegram_id: int) -> str:
         json.dump(contact_data, f, ensure_ascii=False, indent=2)
     logger.info(f"Contacto creado: {filepath}")
     return contact_id
+
+
+def _load_reminder_config() -> dict:
+    """Carga la configuración de recordatorios."""
+    config_path = os.path.join(DATA_DIR, "config", "recordatorios.json")
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
+        logger.error(f"No se pudo cargar {config_path}")
+        return {"activo": False}
+
+
+def _load_sent_reminders() -> dict:
+    """Carga el registro de recordatorios ya enviados."""
+    filepath = os.path.join(DATA_DIR, "config", "recordatorios-enviados.json")
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
+        return {}
+
+
+def _save_sent_reminder(reminder_key: str) -> None:
+    """Registra que un recordatorio fue enviado para no duplicar."""
+    filepath = os.path.join(DATA_DIR, "config", "recordatorios-enviados.json")
+    sent = _load_sent_reminders()
+    sent[reminder_key] = datetime.now().isoformat()
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(sent, f, ensure_ascii=False, indent=2)
+
+
+def _parse_flyer_moment(flyer_moment: str) -> list[int]:
+    """Parsea el campo flyer_moment del evento. Ej: '-60,-30,-7 dagen' -> [60, 30, 7]."""
+    if not flyer_moment or flyer_moment.lower() == "x":
+        return []
+    # Extraer todos los números del string
+    numbers = re.findall(r'(\d+)', flyer_moment)
+    return [int(n) for n in numbers]
+
+
+def _get_contact_telegram_id(contact_id: str) -> int | None:
+    """Obtiene el telegram_id de un contacto por su ID."""
+    filepath = os.path.join(DATA_DIR, "contactos", f"{contact_id}.json")
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            contact = json.load(f)
+        return contact.get("telegram_id")
+    except (json.JSONDecodeError, FileNotFoundError):
+        return None
+
+
+async def _send_reminders(context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Job diario: revisa el calendario y envía 3 tipos de recordatorio."""
+    config = _load_reminder_config()
+    if not config.get("activo"):
+        return
+
+    sent = _load_sent_reminders()
+    conf_config = config.get("confirmacion", {})
+    flyer_config = config.get("flyer", {})
+    grupo_config = config.get("grupo", {})
+    group_chat_id = os.getenv("TELEGRAM_GROUP_CHAT_ID", "")
+
+    # Cargar calendario
+    year = datetime.now().year
+    cal_path = os.path.join(DATA_DIR, f"calendario-{year}.json")
+    try:
+        with open(cal_path, "r", encoding="utf-8") as f:
+            calendario = json.load(f)
+    except (json.JSONDecodeError, FileNotFoundError):
+        logger.error(f"No se pudo cargar calendario: {cal_path}")
+        return
+
+    hoy = date.today()
+    enviados_hoy = 0
+    admin_resumen = []
+
+    for evento in calendario.get("eventos", []):
+        if evento.get("estado") == "cancelado":
+            continue
+
+        try:
+            fecha_evento = date.fromisoformat(evento["fecha"])
+        except (ValueError, KeyError):
+            continue
+
+        dias_restantes = (fecha_evento - hoy).days
+        if dias_restantes < 0:
+            continue
+
+        evt_nombre = evento.get("nombre", "Sin nombre")
+        evt_fecha = evento.get("fecha", "")
+        evt_id = evento["id"]
+
+        # --- TIPO 1: Recordatorio de confirmación (solo eventos pendientes) ---
+        if evento.get("estado") == "pendiente":
+            for dias in conf_config.get("dias", [30, 14, 7]):
+                if dias_restantes != dias:
+                    continue
+                key = f"conf:{evt_id}:{dias}"
+                if key in sent:
+                    continue
+
+                mensajes_conf = conf_config.get("mensajes", {})
+                template = mensajes_conf.get(str(dias), "Recordatorio: '{nombre}' el {fecha} aún no está confirmado.")
+                mensaje = template.format(nombre=evt_nombre, fecha=evt_fecha, dias=dias)
+
+                contacto_ids = evento.get("contacto_ids", [])
+                for cid in contacto_ids:
+                    tid = _get_contact_telegram_id(cid)
+                    if tid:
+                        try:
+                            await context.bot.send_message(chat_id=tid, text=mensaje)
+                        except Exception as e:
+                            logger.error(f"Error enviando confirmación a {cid}: {e}")
+
+                _save_sent_reminder(key)
+                enviados_hoy += 1
+                admin_resumen.append(f"Confirmación ({dias}d): {evt_nombre}")
+                logger.info(f"Recordatorio confirmación: {evt_id} ({dias}d)")
+
+        # --- TIPO 2: Recordatorio de flyer (basado en flyer_moment) ---
+        flyer_moment = evento.get("flyer_moment", "")
+        flyer_resp = evento.get("flyer_responsable", "")
+        if flyer_moment and flyer_moment.lower() != "x" and flyer_resp.lower() != "x":
+            flyer_dias = _parse_flyer_moment(flyer_moment)
+            for dias in flyer_dias:
+                if dias_restantes != dias:
+                    continue
+                key = f"flyer:{evt_id}:{dias}"
+                if key in sent:
+                    continue
+
+                template = flyer_config.get("mensaje", "Recordatorio de flyer: '{nombre}' el {fecha}. Faltan {dias} días.")
+                mensaje = template.format(nombre=evt_nombre, fecha=evt_fecha, dias=dias)
+
+                # Enviar al responsable del flyer o a los contactos del evento
+                contacto_ids = evento.get("contacto_ids", [])
+                for cid in contacto_ids:
+                    tid = _get_contact_telegram_id(cid)
+                    if tid:
+                        try:
+                            await context.bot.send_message(chat_id=tid, text=mensaje)
+                        except Exception as e:
+                            logger.error(f"Error enviando flyer reminder a {cid}: {e}")
+
+                _save_sent_reminder(key)
+                enviados_hoy += 1
+                admin_resumen.append(f"Flyer ({dias}d): {evt_nombre}")
+                logger.info(f"Recordatorio flyer: {evt_id} ({dias}d)")
+
+        # --- TIPO 3: Recordatorio grupal ---
+        if group_chat_id:
+            for dias in grupo_config.get("dias", [14, 7, 1]):
+                if dias_restantes != dias:
+                    continue
+                key = f"grupo:{evt_id}:{dias}"
+                if key in sent:
+                    continue
+
+                mensajes_grupo = grupo_config.get("mensajes", {})
+                template = mensajes_grupo.get(str(dias), "Próximo evento: {nombre} - {fecha}")
+                mensaje = template.format(
+                    nombre=evt_nombre,
+                    fecha=evt_fecha,
+                    estado=evento.get("estado", ""),
+                    detalle=evento.get("detalle", ""),
+                    dias=dias,
+                )
+
+                try:
+                    await context.bot.send_message(chat_id=group_chat_id, text=mensaje)
+                except Exception as e:
+                    logger.error(f"Error enviando recordatorio grupal: {e}")
+
+                _save_sent_reminder(key)
+                enviados_hoy += 1
+                admin_resumen.append(f"Grupo ({dias}d): {evt_nombre}")
+                logger.info(f"Recordatorio grupo: {evt_id} ({dias}d)")
+
+    # Resumen diario al admin
+    if admin_resumen and config.get("notificar_admin"):
+        admin_tid = _get_admin_telegram_id()
+        if admin_tid:
+            resumen = "Resumen de recordatorios de hoy:\n\n" + "\n".join(f"- {r}" for r in admin_resumen)
+            try:
+                await context.bot.send_message(chat_id=admin_tid, text=resumen)
+            except Exception as e:
+                logger.error(f"Error notificando admin resumen: {e}")
+
+    if enviados_hoy > 0:
+        logger.info(f"Total recordatorios enviados hoy: {enviados_hoy}")
+    else:
+        logger.info("Sin recordatorios pendientes para hoy")
 
 
 def _strip_markdown(text: str) -> str:
@@ -279,6 +476,59 @@ async def _handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         logger.info(f"Usuario rechazado: telegram_id {telegram_id}")
 
 
+async def _handle_new_group(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Detecta cuando el bot es agregado a un grupo y guarda el chat_id."""
+    if not update.my_chat_member:
+        return
+
+    new_status = update.my_chat_member.new_chat_member.status
+    chat = update.my_chat_member.chat
+
+    if new_status in ("member", "administrator") and chat.type in ("group", "supergroup"):
+        group_id = str(chat.id)
+        group_title = chat.title or "Sin nombre"
+        logger.info(f"Bot agregado al grupo: {group_title} (chat_id: {group_id})")
+
+        # Guardar en .env
+        env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), ".env")
+        try:
+            with open(env_path, "r", encoding="utf-8") as f:
+                env_content = f.read()
+
+            if "TELEGRAM_GROUP_CHAT_ID=" in env_content:
+                lines = env_content.split("\n")
+                for i, line in enumerate(lines):
+                    if line.startswith("TELEGRAM_GROUP_CHAT_ID="):
+                        lines[i] = f"TELEGRAM_GROUP_CHAT_ID={group_id}"
+                env_content = "\n".join(lines)
+            else:
+                env_content += f"\nTELEGRAM_GROUP_CHAT_ID={group_id}\n"
+
+            with open(env_path, "w", encoding="utf-8") as f:
+                f.write(env_content)
+            logger.info(f"TELEGRAM_GROUP_CHAT_ID={group_id} guardado en .env")
+
+            # Actualizar variable de entorno en runtime
+            os.environ["TELEGRAM_GROUP_CHAT_ID"] = group_id
+        except Exception as e:
+            logger.error(f"Error guardando group chat_id: {e}")
+
+        # Notificar al admin
+        admin_tid = _get_admin_telegram_id()
+        logger.info(f"Admin telegram_id encontrado: {admin_tid}")
+        if admin_tid:
+            try:
+                result = await context.bot.send_message(
+                    chat_id=admin_tid,
+                    text=f"Bot agregado al grupo: {group_title}\nChat ID: {group_id}\nRecordatorios grupales activados.",
+                )
+                logger.info(f"Admin notificado sobre grupo: {group_title} (msg_id: {result.message_id}, chat_id: {result.chat.id})")
+            except Exception as e:
+                logger.error(f"Error notificando al admin sobre grupo: {e}")
+        else:
+            logger.warning("No se encontró admin para notificar sobre grupo")
+
+
 async def _start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Responde al comando /start. Si no está identificado, pide compartir contacto."""
     telegram_id = update.message.from_user.id
@@ -310,10 +560,27 @@ def start_telegram_bot() -> None:
     print("KalendBot Telegram iniciado. Ctrl+C para detener.")
 
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+    app.add_handler(ChatMemberHandler(_handle_new_group, ChatMemberHandler.MY_CHAT_MEMBER))
     app.add_handler(CommandHandler("start", _start_command))
     app.add_handler(CallbackQueryHandler(_handle_approval))
     app.add_handler(MessageHandler(filters.CONTACT, _handle_contact))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_text))
+
+    # Programar recordatorios diarios
+    reminder_config = _load_reminder_config()
+    if reminder_config.get("activo") and app.job_queue is not None:
+        tz_name = reminder_config.get("timezone", "America/Mexico_City")
+        hora_str = reminder_config.get("hora_envio", "09:00")
+        hora, minuto = map(int, hora_str.split(":"))
+        tz = ZoneInfo(tz_name)
+        app.job_queue.run_daily(
+            _send_reminders,
+            time=time(hour=hora, minute=minuto, tzinfo=tz),
+            name="daily_reminders",
+        )
+        logger.info(f"Recordatorios programados: diario a las {hora_str} ({tz_name})")
+    elif reminder_config.get("activo"):
+        logger.warning("JobQueue no disponible. Instalar: pip install 'python-telegram-bot[job-queue]'")
 
     app.run_polling(allowed_updates=Update.ALL_TYPES)
 

@@ -1,0 +1,28 @@
+{
+  "activo": true,
+  "hora_envio": "09:00",
+  "timezone": "America/Mexico_City",
+  "confirmacion": {
+    "descripcion": "Solo para eventos en estado 'pendiente'. Enviado al contacto responsable.",
+    "dias": [30, 14, 7],
+    "mensajes": {
+      "30": "Hola! El evento '{nombre}' está programado para el {fecha}. Faltan 30 días y aún no está confirmado. Puedes confirmar la fecha?",
+      "14": "Recordatorio: El evento '{nombre}' es en 2 semanas ({fecha}) y sigue pendiente de confirmación. Por favor confirma.",
+      "7": "Urgente: El evento '{nombre}' es la próxima semana ({fecha}) y NO está confirmado. Necesitamos tu confirmación."
+    }
+  },
+  "flyer": {
+    "descripcion": "Basado en flyer_moment del evento. No aplica si flyer_responsable es 'x' (proveedor lo hace).",
+    "mensaje": "Recordatorio de flyer: El evento '{nombre}' es el {fecha}. Faltan {dias} días. Es momento de preparar/enviar el flyer."
+  },
+  "grupo": {
+    "descripcion": "Recordatorio general al grupo de NV Mexico sobre eventos próximos.",
+    "dias": [7, 3, 1],
+    "mensajes": {
+      "7": "Próximo evento en 1 semana: {nombre} - {fecha}. {detalle}",
+      "3": "En 3 días: {nombre} - {fecha}. {detalle}",
+      "1": "Mañana: {nombre} - {fecha}. Todo listo!"
+    }
+  },
+  "notificar_admin": true
+}
