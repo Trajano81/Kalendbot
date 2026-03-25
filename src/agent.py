@@ -58,6 +58,7 @@ HERRAMIENTAS DISPONIBLES:
 - GroupNotifier: Publicar en chat grupal
 - FlyerManager: Gestionar flujo de flyers (check_responsibility, get_status, request_flyer, approve, reject, set_reminder)
 - RulesEngine: Consultar reglas de negocio
+- CalendarExporter: Exportar calendario a Excel (.xlsx). Filtros opcionales: año, estado, contacto
 
 REGLAS DE BÚSQUEDA:
 1. PERSONAS: Cuando mencionen a alguien por nombre (ej: "Koen", "Mirjam"), usa ContactManager con 'search:nombre' PRIMERO. No busques personas en ProviderManager — los proveedores son organizaciones, no personas.

@@ -589,6 +589,47 @@ async def _start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
         )
 
 
+async def _handle_export_excel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Comando /export_excel — genera y envía el Excel del calendario sin consumir tokens."""
+    telegram_id = update.message.from_user.id
+    contact_id = _identify_by_telegram_id(telegram_id)
+
+    if not contact_id:
+        await update.message.reply_text("No estás identificado. Usa /start primero.")
+        return
+
+    try:
+        with open(os.path.join(DATA_DIR, "contactos", f"{contact_id}.json"), "r", encoding="utf-8") as f:
+            contact_data = json.load(f)
+        rol = contact_data.get("rol_kalendbot", "readonly")
+    except (FileNotFoundError, json.JSONDecodeError):
+        rol = "readonly"
+
+    if rol == "readonly":
+        await update.message.reply_text("No tienes permisos para exportar el calendario.")
+        return
+
+    await update.message.reply_text("Generando Excel del calendario...")
+
+    try:
+        from src.tools.calendar_exporter import export_calendar
+        output_path = export_calendar(year=2026)
+
+        if output_path.startswith("Error") or output_path.startswith("No hay"):
+            await update.message.reply_text(f"Error: {output_path}")
+            return
+
+        with open(output_path, "rb") as doc:
+            await update.message.reply_document(
+                document=doc,
+                filename=os.path.basename(output_path),
+                caption="Calendario NV Mexico 2026 actualizado",
+            )
+    except Exception as e:
+        logger.error(f"Error exportando calendario: {e}")
+        await update.message.reply_text(f"Error generando el archivo: {e}")
+
+
 def start_telegram_bot() -> None:
     """Inicia el bot de Telegram con polling."""
     if not TELEGRAM_BOT_TOKEN:
@@ -602,6 +643,7 @@ def start_telegram_bot() -> None:
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     app.add_handler(ChatMemberHandler(_handle_new_group, ChatMemberHandler.MY_CHAT_MEMBER))
     app.add_handler(CommandHandler("start", _start_command))
+    app.add_handler(CommandHandler("export_excel", _handle_export_excel))
     app.add_handler(CallbackQueryHandler(_handle_approval))
     app.add_handler(MessageHandler(filters.CONTACT, _handle_contact))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_text))
