@@ -79,7 +79,11 @@ def date_locker(
 
         for e in eventos:
             if e["id"] == event_id:
-                e["fecha_confirmada"] = fecha
+                if e.get("fecha") != fecha:
+                    e["fecha_original"] = e.get("fecha")
+                e["fecha"] = fecha
+                e["fecha_exacta"] = True
+                e.pop("fecha_confirmada", None)
                 e["estado"] = "confirmado"
                 e["ultima_actualizacion"] = datetime.now().isoformat()
                 _save_calendar(cal, year)
@@ -91,7 +95,8 @@ def date_locker(
             if e["id"] == event_id:
                 old_status = e.get("estado")
                 e["estado"] = "pendiente"
-                e["fecha_confirmada"] = None
+                e["fecha_exacta"] = False
+                e.pop("fecha_confirmada", None)
                 e["ultima_actualizacion"] = datetime.now().isoformat()
                 _save_calendar(cal, year)
                 return f"DESBLOQUEADA: '{e['nombre']}' vuelve a estado pendiente (era: {old_status})"

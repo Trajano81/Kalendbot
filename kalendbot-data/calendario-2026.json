@@ -114,14 +114,14 @@
       "reel_post": true,
       "eventbrite": true,
       "condicional": false,
-      "fecha_confirmada": "2026-01-22",
       "ultima_actualizacion": "2026-03-20T10:07:16.362759"
     },
     {
       "id": "oproep-bestuursleden",
       "nombre": "Oproep voor nieuwe bestuursleden",
-      "fecha": "2026-02-01",
-      "fecha_exacta": false,
+      "fecha": "2026-05-01",
+      "fecha_original": "2026-02-01",
+      "fecha_exacta": true,
       "estado": "confirmado",
       "partner_id": "nv-mexico",
       "contacto_ids": [
@@ -144,7 +144,7 @@
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
-      "ultima_actualizacion": "2026-03-20T10:21:53.031184"
+      "ultima_actualizacion": "2026-03-24T11:35:11.653534"
     },
     {
       "id": "elfstedentocht",
@@ -202,7 +202,6 @@
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
-      "fecha_confirmada": "2026-03-14",
       "ultima_actualizacion": "2026-03-20T10:16:04.725329"
     },
     {
@@ -305,8 +304,9 @@
     {
       "id": "buitendag-cuernavaca",
       "nombre": "Buitendag",
-      "fecha": "2026-04-01",
-      "fecha_exacta": false,
+      "fecha": "2026-04-03",
+      "fecha_original": "2026-04-01",
+      "fecha_exacta": true,
       "nota_fecha": "Abril/Mei según Excel",
       "estado": "cancelado",
       "partner_id": "atk",
@@ -335,7 +335,6 @@
       "eventbrite": true,
       "condicional": false,
       "texto_social": "☀️ Buitendag in Cuernavaca\nZin in een gezellige dag in de buitenlucht?",
-      "fecha_confirmada": "2026-04-03",
       "ultima_actualizacion": "2026-03-24T10:20:53.614071"
     },
     {
