@@ -1,6 +1,8 @@
 {
   "id": "embajada-nl",
   "nombre": "Embajada de los Países Bajos en México",
+  "partner_display": "Ambassade",
+  "venue_nombre": "Residentie Ambassade",
   "tipo": "institucional",
   "direccion": "Residencia del Embajador (dirección se comunica en el ticket)",
   "dependencia": "media",

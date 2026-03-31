@@ -6,7 +6,8 @@
     {
       "id": "pub-quiz-recurrente",
       "nombre": "Maandelijkse Pub Quiz",
-      "regla": "1er jueves del mes",
+      "partner_nombre": "Christiaan Kemper",
+      "regla": "1e donderdag vd mnd",
       "partner_id": "holland-wafels",
       "contacto_ids": [
         "christian-kemper"
@@ -50,13 +51,14 @@
           "estado": "pendiente"
         }
       ],
-      "nota": "No se listan instancias julio-diciembre. Posible pausa segundo semestre.",
+      "nota": "Geen instanties juli-december vermeld. Mogelijk pauze tweede semester.",
       "texto_social": "🍻 Pub Quiz bij Holland Wafels\nDenk jij dat je alles weet over geschiedenis, sport, muziek en nog veel meer? Trommel je vrienden op en doe mee aan onze gezellige Pub Quiz!"
     },
     {
       "id": "vrijmibo-recurrente",
       "nombre": "Maandelijkse Vrijmibo",
-      "regla": "Último viernes del mes",
+      "partner_nombre": "Andre Major",
+      "regla": "Laatste vrijdag vd mnd",
       "partner_id": null,
       "contacto_ids": [
         "andre-major"
@@ -80,8 +82,16 @@
       ],
       "reel_post": false,
       "eventbrite": false,
-      "instancias_2026": [],
-      "nota": "No hay fechas individuales listadas en el Excel."
+      "instancias_2026": [
+        {"fecha": "2026-01-30", "estado": "pendiente"},
+        {"fecha": "2026-02-27", "estado": "pendiente"},
+        {"fecha": "2026-03-27", "estado": "pendiente"},
+        {"fecha": "2026-04-24", "estado": "pendiente"},
+        {"fecha": "2026-05-29", "estado": "pendiente"},
+        {"fecha": "2026-06-26", "estado": "pendiente"}
+      ],
+      "nota": "Geen individuele data vermeld in Excel.",
+      "expandir_en_export": false
     }
   ],
   "eventos": [
@@ -131,7 +141,7 @@
       "hora": null,
       "precio": null,
       "descripcion": "Geen activiteit, alleen een flyer",
-      "detalle": "Solo convocatoria, no es un evento presencial",
+      "detalle": "Alleen kennisgeving, geen fysiek evenement",
       "tier_promocion": "regular",
       "flyer_responsable": "nv",
       "flyer_oleadas": 1,
@@ -176,7 +186,7 @@
       "nombre": "Klimtocht: Pico de Águila",
       "fecha": "2026-03-14",
       "estado": "confirmado",
-      "partner_id": "rene-wieben-guia",
+      "partner_id": "rene-wieben",
       "contacto_ids": [
         "rene-wieben"
       ],
@@ -239,6 +249,7 @@
     {
       "id": "koningsdag",
       "nombre": "Koningsdag",
+      "partner_nombre": "De Sprinkhaan/ Ambassade",
       "fecha": "2026-05-03",
       "fecha_original": "2026-04-25",
       "nota_fecha": "Movido al 3 de mayo por Semana Santa",
@@ -373,7 +384,7 @@
       "fecha": "2026-05-16",
       "estado": "pendiente",
       "partner_id": null,
-      "partner_nombre": "Paul vd Voort / Jasper de Gelder",
+      "partner_nombre": "Paul vd Voort/ Jasper de Gelder",
       "contacto_ids": [
         "paul-vd-voort"
       ],
@@ -385,7 +396,7 @@
         "mxn": 0
       },
       "descripcion": "Expositie Ned kunstenaars",
-      "detalle": "Exposición de diversos artistas neerlandeses",
+      "detalle": "Expositie van diverse Nederlandse kunstenaars",
       "tier_promocion": "regular",
       "flyer_moment": "-7 dagen",
       "flyer_responsable": "proveedor",
@@ -473,8 +484,8 @@
       "venue_id": "holland-wafels",
       "hora": null,
       "precio": null,
-      "descripcion": "Borrel para voluntarios",
-      "detalle": "Geen flyer. Solo invitación directa a voluntarios",
+      "descripcion": "Borrel voor vrijwilligers",
+      "detalle": "Geen flyer. Alleen directe uitnodiging voor vrijwilligers",
       "tier_promocion": "ninguno",
       "flyer_responsable": "ninguno",
       "delegado": false,
@@ -601,7 +612,7 @@
       "reel_post": false,
       "eventbrite": false,
       "condicional": true,
-      "condicion": "Solo si Holanda clasifica a 32avos de final"
+      "condicion": "Alleen als Nederland de 32e finale bereikt"
     },
     {
       "id": "wk-16e-8e-finale",
@@ -633,7 +644,7 @@
       "reel_post": false,
       "eventbrite": false,
       "condicional": true,
-      "condicion": "Solo si Holanda avanza a 16avos/8vos de final"
+      "condicion": "Alleen als Nederland doorgaat naar 16e/8e finale"
     },
     {
       "id": "rondleiding-chapultepec",
@@ -642,7 +653,7 @@
       "fecha_exacta": false,
       "nota_fecha": "Excel dice 'Augustus' en Sheet1, 'Hoja1' dice '4 Oktober'",
       "estado": "pendiente",
-      "partner_id": "vicky-rodriguez-guia",
+      "partner_id": "vicky-rodriguez",
       "contacto_ids": [
         "vicky-rodriguez"
       ],
@@ -730,6 +741,7 @@
     {
       "id": "sinterklaas",
       "nombre": "Sinterklaas",
+      "partner_nombre": "Sprinkhaan",
       "fecha": "2026-12-05",
       "estado": "pendiente",
       "partner_id": "de-sprinkhaan",
@@ -777,7 +789,7 @@
       "hora": null,
       "precio": null,
       "descripcion": "Uitgave van het blad De Popo voor Nederlanders in Mexico",
-      "detalle": "Última edición del año",
+      "detalle": "Laatste editie van het jaar",
       "tier_promocion": "publicacion",
       "flyer_moment": "-0 dagen",
       "flyer_responsable": "proveedor",
