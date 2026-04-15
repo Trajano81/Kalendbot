@@ -32,6 +32,7 @@ TRANSLATIONS = {
             9: "September", 10: "Oktober", 11: "November", 12: "December",
         },
         "headers": [
+            "Code", "Status",
             "Datum", "Activiteit", "Partner", "Locatie",
             "1 omschrijving", "2 Tijdstip", "3 Entree", "4 Adres",
             "5 Info post/ FLYER:", "6 flyer moment", "7 contact persoon", "8 Celular",
@@ -40,6 +41,10 @@ TRANSLATIONS = {
         ],
         "ntbp": "ntbp",
         "nvt": "nvt",
+        "cancelled": "geanuleerd",
+        "status_pendiente": "open",
+        "status_confirmado": "bevestigd",
+        "status_cancelado": "geanuleerd",
     },
     "eng": {
         "months": {
@@ -48,6 +53,7 @@ TRANSLATIONS = {
             9: "September", 10: "October", 11: "November", 12: "December",
         },
         "headers": [
+            "Code", "Status",
             "Date", "Activity", "Partner", "Location",
             "1 Description", "2 Time", "3 Entry fee", "4 Address",
             "5 Info post/ FLYER:", "6 Flyer moment", "7 Contact person", "8 Phone",
@@ -56,6 +62,10 @@ TRANSLATIONS = {
         ],
         "ntbp": "TBD",
         "nvt": "n/a",
+        "cancelled": "cancelled",
+        "status_pendiente": "pending",
+        "status_confirmado": "confirmed",
+        "status_cancelado": "cancelled",
     },
     "spa": {
         "months": {
@@ -64,6 +74,7 @@ TRANSLATIONS = {
             9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre",
         },
         "headers": [
+            "Código", "Estado",
             "Fecha", "Actividad", "Socio", "Ubicación",
             "1 Descripción", "2 Horario", "3 Entrada", "4 Dirección",
             "5 Info post/ FLYER:", "6 Momento flyer", "7 Persona contacto", "8 Celular",
@@ -72,6 +83,10 @@ TRANSLATIONS = {
         ],
         "ntbp": "por definir",
         "nvt": "n/a",
+        "cancelled": "cancelado",
+        "status_pendiente": "pendiente",
+        "status_confirmado": "confirmado",
+        "status_cancelado": "cancelado",
     },
     "por": {
         "months": {
@@ -80,6 +95,7 @@ TRANSLATIONS = {
             9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro",
         },
         "headers": [
+            "Código", "Estado",
             "Data", "Atividade", "Parceiro", "Local",
             "1 Descrição", "2 Horário", "3 Entrada", "4 Endereço",
             "5 Info post/ FLYER:", "6 Momento flyer", "7 Pessoa contacto", "8 Telefone",
@@ -88,6 +104,10 @@ TRANSLATIONS = {
         ],
         "ntbp": "a definir",
         "nvt": "n/a",
+        "cancelled": "cancelado",
+        "status_pendiente": "pendente",
+        "status_confirmado": "confirmado",
+        "status_cancelado": "cancelado",
     },
 }
 
@@ -115,6 +135,18 @@ def _resolve_venue(venue_id) -> str:
     return data.get("venue_nombre", data.get("nombre", venue_id))
 
 
+def _format_phone(tel) -> str:
+    """Formats phone with country code prefix. Assumes +52 (Mexico) if no prefix."""
+    s = str(tel).strip()
+    if not s:
+        return ""
+    if s.startswith("+"):
+        return s  # Already has international prefix
+    if s.startswith("52") and len(s) >= 12:
+        return f"+{s}"
+    return f"+52{s}"
+
+
 def _resolve_contact(contact_ids: list) -> tuple:
     nombres, telefonos = [], []
     for cid in (contact_ids or []):
@@ -122,31 +154,23 @@ def _resolve_contact(contact_ids: list) -> tuple:
         nombres.append(data.get("nombre", cid))
         tel = data.get("telefono", "")
         if tel:
-            try:
-                telefonos.append(int(tel))
-            except (ValueError, TypeError):
-                telefonos.append(tel)
+            telefonos.append(_format_phone(tel))
     return (
         ", ".join(nombres),
         telefonos[0] if len(telefonos) == 1
-        else ", ".join(str(t) for t in telefonos) if telefonos
+        else ", ".join(telefonos) if telefonos
         else "",
     )
 
 
-def _format_date(fecha_str: str, lang: str = "dut") -> str:
-    months = TRANSLATIONS.get(lang, TRANSLATIONS["dut"])["months"]
+def _format_date(fecha_str: str, lang: str = "dut", fecha_exacta: bool = True) -> str:
     try:
         dt = datetime.fromisoformat(fecha_str)
-        return f"{dt.day} {months[dt.month]}"
+        if not fecha_exacta and dt.day == 1:
+            return f"ntbp {dt.month:02d}/{dt.year}"
+        return f"{dt.day:02d}/{dt.month:02d}/{dt.year}"
     except (ValueError, TypeError):
         return fecha_str or ""
-
-
-def _format_hora(hora_str, lang: str = "dut") -> str:
-    if not hora_str:
-        return TRANSLATIONS.get(lang, TRANSLATIONS["dut"])["ntbp"]
-    return hora_str
 
 
 def _resolve_address(evento: dict, lang: str = "dut") -> str:
@@ -165,14 +189,16 @@ def _resolve_address(evento: dict, lang: str = "dut") -> str:
 def _format_precio(precio):
     if precio is None:
         return 0
+    if isinstance(precio, str):
+        return precio  # Keep text descriptions like "100k/200volw"
     if isinstance(precio, dict):
+        text = precio.get("texto")
+        if text:
+            return text
         return precio.get("mxn", 0)
     if isinstance(precio, (int, float)):
         return precio
-    try:
-        return int(precio)
-    except (ValueError, TypeError):
-        return 0
+    return 0
 
 
 def _translate_content(events: list, lang: str) -> list:
@@ -189,7 +215,7 @@ def _translate_content(events: list, lang: str) -> list:
     for evento in events:
         for field in fields:
             val = evento.get(field)
-            if val and isinstance(val, str) and val not in ("x", "ntbp", "nvt", ""):
+            if val and isinstance(val, str) and val not in ("ntbp", "nvt", "n/a", "TBD", ""):
                 texts_to_translate[val] = None  # placeholder
 
     if not texts_to_translate:
@@ -240,13 +266,15 @@ def _translate_content(events: list, lang: str) -> list:
 
 
 def _event_to_row(evento: dict, lang: str = "dut") -> list:
-    """Genera fila B-U (20 columnas) matching formato original."""
+    """Genera fila B-W (22 columnas) matching formato original."""
     t = TRANSLATIONS.get(lang, TRANSLATIONS["dut"])
     nombre_contacto, tel_contacto = _resolve_contact(evento.get("contacto_ids"))
     canales = evento.get("canales", [])
 
-    # Col N: flyer oleadas (number or "x")
-    flyer_oleadas = evento.get("flyer_oleadas", "x") or "x"
+    nvt = t["nvt"]
+
+    # Col N: flyer oleadas (number or nvt)
+    flyer_oleadas = evento.get("flyer_oleadas") or nvt
 
     # Col O: flyer responsable
     resp = evento.get("flyer_responsable", "")
@@ -254,29 +282,62 @@ def _event_to_row(evento: dict, lang: str = "dut") -> list:
         flyer_resp = CONTENT_MANAGER["nombre"]
     elif resp == "proveedor":
         flyer_resp = evento.get("flyer_responsable_nombre", "")
+    elif resp == "ninguno":
+        flyer_resp = nvt
     else:
-        flyer_resp = ""
+        flyer_resp = nvt
+
+    # Cancelled events show "geanuleerd" instead of date
+    if evento.get("estado") == "cancelado":
+        date_str = t["cancelled"]
+    else:
+        fecha_exacta = evento.get("fecha_exacta", True)
+        date_str = _format_date(evento.get("fecha", evento.get("fecha_inicio", "")), lang, fecha_exacta)
+
+    # hora: nvt for publications, ntbp for pending
+    tier = evento.get("tier_promocion", "")
+    hora_val = evento.get("hora")
+    if hora_val:
+        hora_str = hora_val
+    elif tier == "publicacion":
+        hora_str = nvt
+    else:
+        hora_str = t["ntbp"]
+
+    # precio: nvt for null (publications, flyer-only), 0 for free events
+    precio_raw = evento.get("precio")
+    precio_val = nvt if precio_raw is None else _format_precio(precio_raw)
+
+    # flyer_moment: nvt if no flyer needed
+    flyer_moment = evento.get("flyer_moment", "") or nvt
+
+    # Translated status
+    estado = evento.get("estado", "")
+    status_key = f"status_{estado}"
+    status_str = t.get(status_key, estado)
 
     return [
-        _format_date(evento.get("fecha", evento.get("fecha_inicio", "")), lang),
+        evento.get("id", ""),
+        status_str,
+        date_str,
         evento.get("nombre", ""),
         evento.get("partner_nombre") or _resolve_provider(evento.get("partner_id")) or "",
-        evento.get("venue_nombre") or _resolve_venue(evento.get("venue_id")) or t["nvt"],
+        evento.get("venue_nombre") or _resolve_venue(evento.get("venue_id")) or nvt,
         evento.get("descripcion", ""),
-        _format_hora(evento.get("hora"), lang),
-        _format_precio(evento.get("precio")),
+        hora_str,
+        precio_val,
         _resolve_address(evento, lang),
-        evento.get("detalle", ""),
-        evento.get("flyer_moment", ""),
+        evento.get("detalle") or nvt,
+        flyer_moment,
         nombre_contacto,
         tel_contacto,
         flyer_oleadas,
         flyer_resp,
-        "reel aft" if evento.get("reel_post") else "x",
-        "eventbrite" if evento.get("eventbrite") else "x",
-        "whats" if "whatsapp" in canales else "x",
-        "inst FB TT" if "rrss" in canales else "x",
-        "email" if "email" in canales else "x",
+        "reel aft" if evento.get("reel_post") else nvt,
+        "eventbrite" if evento.get("eventbrite") else nvt,
+        "whats" if "whatsapp" in canales else nvt,
+        "inst FB TT" if "rrss" in canales else nvt,
+        "email" if "email" in canales else nvt,
         evento.get("texto_social", ""),
     ]
 
@@ -311,6 +372,11 @@ def export_calendar(
             expanded = {**rec, **instance}
             expanded.pop("instancias_2026", None)
             expanded.pop("regla", None)
+            # Use short name for expanded instances (e.g., "Pub Quiz" not "Maandelijkse Pub Quiz")
+            expanded["nombre"] = rec.get("nombre_corto", rec.get("nombre", ""))
+            # Expanded instances don't inherit parent channels
+            expanded["canales"] = []
+            expanded["_expanded"] = True
             all_events.append(expanded)
 
     # Ordenar por fecha
@@ -346,19 +412,19 @@ def export_calendar(
     for idx, rec in enumerate(rec_events[:2]):
         row_num = 4 + idx
         row_data = _event_to_row(rec, lang)
-        row_data[0] = rec.get("regla", ws.cell(row=row_num, column=2).value)
+        row_data[2] = rec.get("regla", ws.cell(row=row_num, column=4).value)
         for col_offset, value in enumerate(row_data):
             ws.cell(row=row_num, column=2 + col_offset, value=value)
 
     # Limpiar filas de datos (6+), preservar rows 1-3
     for row in range(DATA_START_ROW, ws.max_row + 1):
-        for col in range(2, 22):  # B-U
+        for col in range(2, 24):  # B-W
             ws.cell(row=row, column=col).value = None
 
     # Copiar formato de row 6 (referencia) para filas que excedan el template
     template_max_row = ws.max_row
     ref_styles = {}
-    for col in range(2, 22):
+    for col in range(2, 24):
         ref_cell = ws.cell(row=DATA_START_ROW, column=col)
         ref_styles[col] = {
             "font": copy.copy(ref_cell.font),

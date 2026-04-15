@@ -3,7 +3,7 @@
   "hora_envio": "09:00",
   "timezone": "America/Mexico_City",
   "confirmacion": {
-    "descripcion": "Solo para eventos en estado 'pendiente'. Enviado al contacto responsable.",
+    "descripcion": "DM privado al contacto responsable del evento. Solo para eventos con estado 'pendiente'. Propósito: solicitar confirmación de fecha/detalles al organizador o proveedor. No se envía al grupo.",
     "dias": [30, 14, 7],
     "mensajes": {
       "30": "Hola! El evento '{nombre}' está programado para el {fecha}. Faltan 30 días y aún no está confirmado. Puedes confirmar la fecha?",
@@ -12,11 +12,11 @@
     }
   },
   "flyer": {
-    "descripcion": "Basado en flyer_moment del evento. No aplica si flyer_responsable es 'x' (proveedor lo hace).",
+    "descripcion": "DM privado al responsable del flyer (NV content manager o proveedor) + copia al coordinador (Rocco). Propósito: recordar preparación/entrega del flyer. Se activa según flyer_moment del evento. No aplica si flyer_status es 'aprobado' o flyer_responsable es 'ninguno'.",
     "mensaje": "Recordatorio de flyer: El evento '{nombre}' es el {fecha}. Faltan {dias} días. Es momento de preparar/enviar el flyer."
   },
   "grupo": {
-    "descripcion": "Recordatorio general al grupo de NV Mexico sobre eventos próximos.",
+    "descripcion": "Mensaje público al grupo de Telegram de NV Mexico. Propósito: anunciar eventos próximos a la comunidad. Se envía a 7, 3 y 1 días del evento — no incluye temas internos como confirmaciones o estado de flyers.",
     "dias": [7, 3, 1],
     "mensajes": {
       "7": "Próximo evento en 1 semana: {nombre} - {fecha}. {detalle}",
