@@ -18,6 +18,13 @@ build/
 # Data (conversation memories are runtime state)
 kalendbot-data/memories/
 
+# Excel exports (generated files)
+kalendbot-data/*.xlsx
+kalendbot-data/NV_*.xlsx
+
+# WAHA sessions (WhatsApp browser data)
+waha-sessions/
+
 # OS
 .DS_Store
 Thumbs.db

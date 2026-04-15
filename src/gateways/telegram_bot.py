@@ -12,6 +12,16 @@ from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardR
 from telegram.ext import Application, MessageHandler, CommandHandler, CallbackQueryHandler, ChatMemberHandler, filters, ContextTypes
 
 from src.agent import handle_message
+from src.gateways.contacts import (
+    identify_by_phone,
+    identify_by_telegram_id,
+    get_admin_telegram_id,
+    get_contact_telegram_id,
+    create_contact_json,
+    save_telegram_id,
+    load_contact,
+    strip_markdown,
+)
 
 logger = logging.getLogger("kalendbot.telegram")
 
@@ -25,102 +35,6 @@ CONTENT_MANAGER_ID = "hanna-van-rijsse"
 # Estado temporal de usuarios en proceso de registro
 # { telegram_id: { "phone": str, "step": "awaiting_name" } }
 _pending_registrations: dict[int, dict] = {}
-
-
-def _get_admin_telegram_id() -> int | None:
-    """Busca el telegram_id del admin principal."""
-    contacts_dir = os.path.join(DATA_DIR, "contactos")
-    if not os.path.exists(contacts_dir):
-        return None
-    for filename in os.listdir(contacts_dir):
-        if not filename.endswith(".json"):
-            continue
-        filepath = os.path.join(contacts_dir, filename)
-        try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                contact = json.load(f)
-            if contact.get("rol_kalendbot") == "admin" and contact.get("telegram_id"):
-                return contact["telegram_id"]
-        except (json.JSONDecodeError, FileNotFoundError):
-            continue
-    return None
-
-
-def _identify_by_telegram_id(telegram_id: int) -> str | None:
-    """Busca un contacto por su telegram_id."""
-    contacts_dir = os.path.join(DATA_DIR, "contactos")
-    if not os.path.exists(contacts_dir):
-        return None
-    for filename in os.listdir(contacts_dir):
-        if not filename.endswith(".json"):
-            continue
-        filepath = os.path.join(contacts_dir, filename)
-        try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                contact = json.load(f)
-            if contact.get("telegram_id") == telegram_id:
-                return contact["id"]
-        except (json.JSONDecodeError, FileNotFoundError):
-            continue
-    return None
-
-
-def _identify_by_phone(phone: str) -> tuple[str | None, str | None]:
-    """Busca un contacto por teléfono. Retorna (contact_id, filepath) o (None, None)."""
-    contacts_dir = os.path.join(DATA_DIR, "contactos")
-    if not os.path.exists(contacts_dir):
-        return None, None
-    normalized = phone.replace("+", "").replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
-    for filename in os.listdir(contacts_dir):
-        if not filename.endswith(".json"):
-            continue
-        filepath = os.path.join(contacts_dir, filename)
-        try:
-            with open(filepath, "r", encoding="utf-8") as f:
-                contact = json.load(f)
-            contact_phone = contact.get("telefono", "").replace("+", "").replace(" ", "").replace("-", "")
-            if contact_phone and (contact_phone in normalized or normalized in contact_phone):
-                return contact["id"], filepath
-        except (json.JSONDecodeError, FileNotFoundError):
-            continue
-    return None, None
-
-
-def _save_telegram_id(filepath: str, telegram_id: int) -> None:
-    """Guarda el telegram_id en el JSON del contacto para futuras sesiones."""
-    try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            contact = json.load(f)
-        contact["telegram_id"] = telegram_id
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(contact, f, ensure_ascii=False, indent=2)
-        logger.info(f"telegram_id {telegram_id} guardado en {filepath}")
-    except Exception as e:
-        logger.error(f"Error guardando telegram_id: {e}")
-
-
-def _create_contact_json(nombre: str, telefono: str, telegram_id: int) -> str:
-    """Crea el archivo JSON de un nuevo contacto con rol readonly. Retorna el contact_id."""
-    # Generar ID: nombre en minúsculas, espacios a guiones
-    contact_id = re.sub(r'[^a-z0-9]+', '-', nombre.lower().strip()).strip('-')
-    contacts_dir = os.path.join(DATA_DIR, "contactos")
-    os.makedirs(contacts_dir, exist_ok=True)
-    filepath = os.path.join(contacts_dir, f"{contact_id}.json")
-
-    contact_data = {
-        "id": contact_id,
-        "nombre": nombre,
-        "telefono": telefono,
-        "perfil_comunicacion": "casual",
-        "canal_preferido": "telegram",
-        "rol": "Usuario",
-        "rol_kalendbot": "readonly",
-        "telegram_id": telegram_id,
-    }
-    with open(filepath, "w", encoding="utf-8") as f:
-        json.dump(contact_data, f, ensure_ascii=False, indent=2)
-    logger.info(f"Contacto creado: {filepath}")
-    return contact_id
 
 
 def _load_reminder_config() -> dict:
@@ -160,17 +74,6 @@ def _parse_flyer_moment(flyer_moment: str) -> list[int]:
     # Extraer todos los números del string
     numbers = re.findall(r'(\d+)', flyer_moment)
     return [int(n) for n in numbers]
-
-
-def _get_contact_telegram_id(contact_id: str) -> int | None:
-    """Obtiene el telegram_id de un contacto por su ID."""
-    filepath = os.path.join(DATA_DIR, "contactos", f"{contact_id}.json")
-    try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            contact = json.load(f)
-        return contact.get("telegram_id")
-    except (json.JSONDecodeError, FileNotFoundError):
-        return None
 
 
 async def _send_reminders(context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -231,7 +134,11 @@ async def _send_reminders(context: ContextTypes.DEFAULT_TYPE) -> None:
 
                 contacto_ids = evento.get("contacto_ids", [])
                 for cid in contacto_ids:
-                    tid = _get_contact_telegram_id(cid)
+                    # Skip contactos que prefieren WhatsApp (los maneja whatsapp_bot)
+                    cdata = load_contact(cid)
+                    if cdata and cdata.get("canal_preferido") == "whatsapp":
+                        continue
+                    tid = get_contact_telegram_id(cid)
                     if tid:
                         try:
                             await context.bot.send_message(chat_id=tid, text=mensaje)
@@ -297,7 +204,11 @@ async def _send_reminders(context: ContextTypes.DEFAULT_TYPE) -> None:
                         destinatarios.append(COORDINATOR_ID)
 
                     for cid in destinatarios:
-                        tid = _get_contact_telegram_id(cid)
+                        # Skip contactos que prefieren WhatsApp
+                        cdata = load_contact(cid)
+                        if cdata and cdata.get("canal_preferido") == "whatsapp":
+                            continue
+                        tid = get_contact_telegram_id(cid)
                         if tid:
                             try:
                                 await context.bot.send_message(chat_id=tid, text=mensaje)
@@ -340,7 +251,7 @@ async def _send_reminders(context: ContextTypes.DEFAULT_TYPE) -> None:
 
     # Resumen diario al admin
     if admin_resumen and config.get("notificar_admin"):
-        admin_tid = _get_admin_telegram_id()
+        admin_tid = get_admin_telegram_id()
         if admin_tid:
             resumen = "Resumen de recordatorios de hoy:\n\n" + "\n".join(f"- {r}" for r in admin_resumen)
             try:
@@ -352,13 +263,6 @@ async def _send_reminders(context: ContextTypes.DEFAULT_TYPE) -> None:
         logger.info(f"Total recordatorios enviados hoy: {enviados_hoy}")
     else:
         logger.info("Sin recordatorios pendientes para hoy")
-
-
-def _strip_markdown(text: str) -> str:
-    """Elimina formato markdown para respuestas en texto plano."""
-    text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)  # **bold**
-    text = re.sub(r'\*(.+?)\*', r'\1', text)        # *italic*
-    return text
 
 
 async def _handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -388,7 +292,7 @@ async def _handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         )
 
         # Notificar al admin con botones Si/No
-        admin_tid = _get_admin_telegram_id()
+        admin_tid = get_admin_telegram_id()
         if admin_tid:
             username = f"@{user.username}" if user.username else "sin username"
             keyboard = InlineKeyboardMarkup([
@@ -412,7 +316,7 @@ async def _handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
 
     # Identificar contacto por telegram_id
-    contact_id = _identify_by_telegram_id(user.id)
+    contact_id = identify_by_telegram_id(user.id)
     if contact_id:
         logger.info(f"Contacto identificado: {contact_id}")
     else:
@@ -430,7 +334,7 @@ async def _handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         return
 
     response = handle_message(phone=chat_id, message=text, contact_id=contact_id)
-    response = _strip_markdown(response)
+    response = strip_markdown(response)
 
     await update.message.reply_text(response)
     logger.info(f"Respuesta enviada a {chat_id}: {response[:80]}")
@@ -444,9 +348,9 @@ async def _handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
     logger.info(f"Contacto compartido: {phone} (telegram_id: {telegram_id})")
 
-    contact_id, filepath = _identify_by_phone(phone)
+    contact_id, filepath = identify_by_phone(phone)
     if contact_id:
-        _save_telegram_id(filepath, telegram_id)
+        save_telegram_id(filepath, telegram_id)
         await update.message.reply_text(
             f"Identificado como: {contact_id}. Ya puedes escribirme normalmente.",
             reply_markup=ReplyKeyboardRemove(),
@@ -480,7 +384,7 @@ async def _handle_approval(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         return
 
     if action == "approve":
-        contact_id = _create_contact_json(
+        contact_id = create_contact_json(
             nombre=reg["nombre"],
             telefono=reg["phone"],
             telegram_id=telegram_id,
@@ -554,7 +458,7 @@ async def _handle_new_group(update: Update, context: ContextTypes.DEFAULT_TYPE) 
             logger.error(f"Error guardando group chat_id: {e}")
 
         # Notificar al admin
-        admin_tid = _get_admin_telegram_id()
+        admin_tid = get_admin_telegram_id()
         logger.info(f"Admin telegram_id encontrado: {admin_tid}")
         if admin_tid:
             try:
@@ -572,7 +476,7 @@ async def _handle_new_group(update: Update, context: ContextTypes.DEFAULT_TYPE) 
 async def _start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Responde al comando /start. Si no está identificado, pide compartir contacto."""
     telegram_id = update.message.from_user.id
-    contact_id = _identify_by_telegram_id(telegram_id)
+    contact_id = identify_by_telegram_id(telegram_id)
 
     if contact_id:
         await update.message.reply_text(
@@ -592,7 +496,7 @@ async def _start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
 async def _handle_export_excel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Comando /export_excel — genera y envía el Excel del calendario sin consumir tokens."""
     telegram_id = update.message.from_user.id
-    contact_id = _identify_by_telegram_id(telegram_id)
+    contact_id = identify_by_telegram_id(telegram_id)
 
     if not contact_id:
         await update.message.reply_text("No estás identificado. Usa /start primero.")

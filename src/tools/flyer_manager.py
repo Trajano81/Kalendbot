@@ -5,7 +5,6 @@ Gestiona el flujo de flyers: solicitar, rastrear aprobación, programar oleadas.
 import json
 import os
 import logging
-import httpx
 from datetime import datetime
 from typing import Optional
 from langchain_core.tools import StructuredTool
@@ -24,24 +23,11 @@ CONTENT_MANAGER = {
 }
 
 
-def _send_telegram_dm(contact_id: str, message: str) -> None:
-    """Envía DM a un contacto via Telegram Bot API. No rompe el flujo si falla."""
-    bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
-    if not bot_token:
-        logger.warning(f"Sin TELEGRAM_BOT_TOKEN, no se envió DM a {contact_id}")
-        return
-    filepath = os.path.join(DATA_DIR, "contactos", f"{contact_id}.json")
+def _send_dm(contact_id: str, message: str) -> None:
+    """Envía DM a un contacto por su canal preferido. No rompe el flujo si falla."""
     try:
-        with open(filepath, "r", encoding="utf-8") as f:
-            contact = json.load(f)
-        tid = contact.get("telegram_id")
-        if not tid:
-            logger.warning(f"Contacto {contact_id} sin telegram_id")
-            return
-        url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
-        resp = httpx.post(url, json={"chat_id": tid, "text": message}, timeout=10)
-        resp.raise_for_status()
-        logger.info(f"DM enviado a {contact_id}")
+        from src.gateways.dispatcher import send_dm
+        send_dm(contact_id, message=message)
     except Exception as e:
         logger.error(f"Error enviando DM a {contact_id}: {e}")
 
@@ -156,7 +142,7 @@ def flyer_manager(
         evento["flyer_aprobado_fecha"] = datetime.now().isoformat()
         with open(cal_path, "w", encoding="utf-8") as f:
             json.dump(cal, f, ensure_ascii=False, indent=2)
-        _send_telegram_dm(COORDINATOR_ID, f"Flyer APROBADO para '{evento['nombre']}'. Listo para publicación.")
+        _send_dm(COORDINATOR_ID, f"Flyer APROBADO para '{evento['nombre']}'. Listo para publicación.")
         return f"Flyer APROBADO para '{evento['nombre']}'. Listo para publicación."
 
     elif action == "reject":

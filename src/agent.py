@@ -13,6 +13,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from openai import RateLimitError
 
 from src.tools import ALL_TOOLS
+from src.gateways.contacts import identify_by_phone
 
 load_dotenv()
 logger = logging.getLogger("kalendbot.agent")
@@ -122,23 +123,8 @@ def _get_contact_role(contact_id: str) -> str:
 
 def _identify_contact_by_phone(phone: str) -> str | None:
     """Busca un contacto por su número de teléfono."""
-    contacts_dir = os.path.join(DATA_DIR, "contactos")
-    if not os.path.exists(contacts_dir):
-        return None
-
-    # Normalizar: quitar +, espacios, guiones
-    normalized = phone.replace("+", "").replace(" ", "").replace("-", "")
-
-    for filename in os.listdir(contacts_dir):
-        if not filename.endswith(".json"):
-            continue
-        filepath = os.path.join(contacts_dir, filename)
-        with open(filepath, "r", encoding="utf-8") as f:
-            contact = json.load(f)
-        contact_phone = contact.get("telefono", "").replace("+", "").replace(" ", "").replace("-", "")
-        if contact_phone and (contact_phone in normalized or normalized in contact_phone):
-            return contact["id"]
-    return None
+    contact_id, _ = identify_by_phone(phone)
+    return contact_id
 
 
 def _check_faq(message: str) -> str | None:
