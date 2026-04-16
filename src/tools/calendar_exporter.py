@@ -32,8 +32,8 @@ TRANSLATIONS = {
             9: "September", 10: "Oktober", 11: "November", 12: "December",
         },
         "headers": [
-            "Code", "Status",
             "Datum", "Activiteit", "Partner", "Locatie",
+            "Code", "Status",
             "1 omschrijving", "2 Tijdstip", "3 Entree", "4 Adres",
             "5 Info post/ FLYER:", "6 flyer moment", "7 contact persoon", "8 Celular",
             "Flyer oleadas", "Flyer resp.",
@@ -53,8 +53,8 @@ TRANSLATIONS = {
             9: "September", 10: "October", 11: "November", 12: "December",
         },
         "headers": [
-            "Code", "Status",
             "Date", "Activity", "Partner", "Location",
+            "Code", "Status",
             "1 Description", "2 Time", "3 Entry fee", "4 Address",
             "5 Info post/ FLYER:", "6 Flyer moment", "7 Contact person", "8 Phone",
             "Flyer waves", "Flyer resp.",
@@ -74,8 +74,8 @@ TRANSLATIONS = {
             9: "Septiembre", 10: "Octubre", 11: "Noviembre", 12: "Diciembre",
         },
         "headers": [
-            "Código", "Estado",
             "Fecha", "Actividad", "Socio", "Ubicación",
+            "Código", "Estado",
             "1 Descripción", "2 Horario", "3 Entrada", "4 Dirección",
             "5 Info post/ FLYER:", "6 Momento flyer", "7 Persona contacto", "8 Celular",
             "Oleadas flyer", "Resp. flyer",
@@ -95,8 +95,8 @@ TRANSLATIONS = {
             9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro",
         },
         "headers": [
-            "Código", "Estado",
             "Data", "Atividade", "Parceiro", "Local",
+            "Código", "Estado",
             "1 Descrição", "2 Horário", "3 Entrada", "4 Endereço",
             "5 Info post/ FLYER:", "6 Momento flyer", "7 Pessoa contacto", "8 Telefone",
             "Ondas flyer", "Resp. flyer",
@@ -265,7 +265,7 @@ def _translate_content(events: list, lang: str) -> list:
     return translated_events
 
 
-def _event_to_row(evento: dict, lang: str = "dut") -> list:
+def _event_to_row(evento: dict, lang: str = "dut", code: str = "") -> list:
     """Genera fila B-W (22 columnas) matching formato original."""
     t = TRANSLATIONS.get(lang, TRANSLATIONS["dut"])
     nombre_contacto, tel_contacto = _resolve_contact(evento.get("contacto_ids"))
@@ -317,12 +317,12 @@ def _event_to_row(evento: dict, lang: str = "dut") -> list:
     status_str = t.get(status_key, estado)
 
     return [
-        evento.get("id", ""),
-        status_str,
         date_str,
         evento.get("nombre", ""),
         evento.get("partner_nombre") or _resolve_provider(evento.get("partner_id")) or "",
         evento.get("venue_nombre") or _resolve_venue(evento.get("venue_id")) or nvt,
+        code or evento.get("id", ""),
+        status_str,
         evento.get("descripcion", ""),
         hora_str,
         precio_val,
@@ -342,13 +342,16 @@ def _event_to_row(evento: dict, lang: str = "dut") -> list:
     ]
 
 
-def export_calendar(
+def _prepare_calendar_data(
     year: int = 2026,
     filter_status: Optional[str] = None,
     filter_contacto: Optional[str] = None,
     lang: str = "dut",
-) -> str:
-    """Exporta calendario JSON a Excel usando template original."""
+) -> tuple[list, list, dict] | str:
+    """
+    Carga JSON, expande recurrentes, ordena, filtra, traduce.
+    Retorna (all_events, rec_events, translations) o string de error.
+    """
     if lang not in VALID_LANGS:
         return f"Error: Idioma '{lang}' no soportado. Usa: {', '.join(VALID_LANGS)}"
 
@@ -357,14 +360,8 @@ def export_calendar(
     if not cal:
         return f"Error: No existe calendario para {year}"
 
-    template = os.path.normpath(TEMPLATE_PATH)
-    if not os.path.exists(template):
-        return f"Error: No se encuentra template Excel en {template}"
-
-    # Recopilar eventos regulares
     all_events = list(cal.get("eventos", []))
 
-    # Expandir eventos recurrentes en instancias individuales
     for rec in cal.get("eventos_recurrentes", []):
         if rec.get("expandir_en_export", True) is False:
             continue
@@ -372,17 +369,13 @@ def export_calendar(
             expanded = {**rec, **instance}
             expanded.pop("instancias_2026", None)
             expanded.pop("regla", None)
-            # Use short name for expanded instances (e.g., "Pub Quiz" not "Maandelijkse Pub Quiz")
             expanded["nombre"] = rec.get("nombre_corto", rec.get("nombre", ""))
-            # Expanded instances don't inherit parent channels
             expanded["canales"] = []
             expanded["_expanded"] = True
             all_events.append(expanded)
 
-    # Ordenar por fecha
     all_events.sort(key=lambda e: e.get("fecha", e.get("fecha_inicio", "9999-12-31")))
 
-    # Filtros opcionales
     if filter_status:
         all_events = [e for e in all_events if e.get("estado") == filter_status]
     if filter_contacto:
@@ -391,9 +384,28 @@ def export_calendar(
     if not all_events:
         return "No hay eventos que coincidan con los filtros."
 
-    # Traducir contenido si idioma != Dutch
     all_events = _translate_content(all_events, lang)
     rec_events = _translate_content(list(cal.get("eventos_recurrentes", [])[:2]), lang)
+    t = TRANSLATIONS.get(lang, TRANSLATIONS["dut"])
+
+    return all_events, rec_events, t
+
+
+def export_calendar(
+    year: int = 2026,
+    filter_status: Optional[str] = None,
+    filter_contacto: Optional[str] = None,
+    lang: str = "dut",
+) -> str:
+    """Exporta calendario JSON a Excel usando template original."""
+    result = _prepare_calendar_data(year, filter_status, filter_contacto, lang)
+    if isinstance(result, str):
+        return result
+    all_events, rec_events, t = result
+
+    template = os.path.normpath(TEMPLATE_PATH)
+    if not os.path.exists(template):
+        return f"Error: No se encuentra template Excel en {template}"
 
     # Copiar template al output
     output_path = os.path.join(DATA_DIR, f"NV_{year}_Jaarkalender_UPDATED_{lang}.xlsx")
@@ -402,17 +414,16 @@ def export_calendar(
     wb = load_workbook(output_path)
     ws = wb.active
 
-    t = TRANSLATIONS.get(lang, TRANSLATIONS["dut"])
-
-    # Escribir headers traducidos en row 3 (B3-U3)
+    # Escribir headers traducidos en row 3 (B3-W3)
     for col_offset, header in enumerate(t["headers"]):
         ws.cell(row=3, column=2 + col_offset, value=header)
 
     # Actualizar rows 4-5 (eventos recurrentes) desde JSON
     for idx, rec in enumerate(rec_events[:2]):
         row_num = 4 + idx
-        row_data = _event_to_row(rec, lang)
-        row_data[2] = rec.get("regla", ws.cell(row=row_num, column=4).value)
+        rec_code = f"R{idx + 1}"
+        row_data = _event_to_row(rec, lang, code=rec_code)
+        row_data[0] = rec.get("regla", ws.cell(row=row_num, column=2).value)
         for col_offset, value in enumerate(row_data):
             ws.cell(row=row_num, column=2 + col_offset, value=value)
 
@@ -437,7 +448,8 @@ def export_calendar(
     # Escribir eventos en filas 6+
     for idx, evento in enumerate(all_events):
         row_num = DATA_START_ROW + idx
-        row_data = _event_to_row(evento, lang)
+        event_code = str(idx + 1)
+        row_data = _event_to_row(evento, lang, code=event_code)
         for col_offset, value in enumerate(row_data):
             cell = ws.cell(row=row_num, column=2 + col_offset, value=value)
             # Aplicar formato a filas que exceden el template original
@@ -466,6 +478,185 @@ def export_calendar(
             anchor.to.row = new_start + to_offset
 
     wb.save(output_path)
+    return output_path
+
+
+# ---------------------------------------------------------------------------
+# JPEG Export
+# ---------------------------------------------------------------------------
+
+ASSETS_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "assets", "logos")
+
+JPEG_TITLES = {
+    "dut": "Voorlopige Jaarplanning NV Mexico {year}",
+    "eng": "Annual Calendar NV Mexico {year}",
+    "spa": "Planificación Anual NV Mexico {year}",
+    "por": "Planejamento Anual NV Mexico {year}",
+}
+
+# Column indices in _event_to_row() output to show in JPEG
+JPEG_COL_INDICES = [0, 1, 2, 3]  # Datum, Activiteit, Partner, Locatie
+
+
+def _img_to_data_uri(path: str) -> str:
+    """Encode image file as base64 data URI for HTML embedding."""
+    import base64
+    if not os.path.exists(path):
+        return ""
+    with open(path, "rb") as f:
+        data = base64.b64encode(f.read()).decode()
+    ext = path.rsplit(".", 1)[-1].lower()
+    mime = {"png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg"}.get(ext, "image/png")
+    return f"data:{mime};base64,{data}"
+
+
+def _build_calendar_html(
+    rows: list[list[str]],
+    headers: list[str],
+    title: str,
+) -> str:
+    """Build self-contained HTML matching the reference JPEG layout."""
+    from html import escape
+
+    nv_logo = _img_to_data_uri(os.path.join(ASSETS_DIR, "nv-mexico-logo.png"))
+    ips_logo = _img_to_data_uri(os.path.join(ASSETS_DIR, "ips-logo.png"))
+    hw_logo = _img_to_data_uri(os.path.join(ASSETS_DIR, "holland-wafels-logo.jpeg"))
+    nl_logo = _img_to_data_uri(os.path.join(ASSETS_DIR, "netherlands-coat-of-arms.png"))
+
+    tbody = "\n".join(
+        "<tr>" + "".join(f"<td>{escape(v)}</td>" for v in row) + "</tr>"
+        for row in rows
+    )
+
+    return f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>
+* {{ margin: 0; padding: 0; box-sizing: border-box; }}
+body {{
+    width: 906px;
+    font-family: Calibri, 'Segoe UI', Arial, Helvetica, sans-serif;
+    background: white;
+    -webkit-font-smoothing: antialiased;
+}}
+.header {{
+    display: flex;
+    align-items: center;
+    height: 80px;
+    padding: 3px 3px 0 3px;
+}}
+.logo-nv {{ height: 72px; margin-right: 10px; }}
+.title {{ flex: 1; text-align: center; font-size: 22px; font-weight: bold; }}
+table {{
+    width: 900px;
+    margin: 0 3px;
+    border-collapse: collapse;
+    table-layout: fixed;
+    border: 1px solid #999;
+}}
+col.c0 {{ width: 140px; }}
+col.c1 {{ width: 260px; }}
+col.c2 {{ width: 230px; }}
+col.c3 {{ width: 270px; }}
+th {{
+    background: #b0b0b0;
+    font-size: 10pt;
+    font-weight: bold;
+    padding: 3px 5px;
+    text-align: left;
+    border: 1px solid #999;
+}}
+td {{
+    font-size: 9pt;
+    padding: 2px 5px;
+    border-bottom: 1px solid #d0d0d0;
+    border-right: 1px solid #d0d0d0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}}
+td:last-child {{ border-right: none; }}
+.footer {{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 15px 40px;
+    height: 120px;
+}}
+.footer img {{ max-height: 95px; }}
+</style></head>
+<body>
+<div class="header">
+    <img src="{nv_logo}" class="logo-nv">
+    <div class="title">{escape(title)}</div>
+</div>
+<table>
+    <colgroup><col class="c0"><col class="c1"><col class="c2"><col class="c3"></colgroup>
+    <thead><tr><th>{escape(headers[0])}</th><th>{escape(headers[1])}</th><th>{escape(headers[2])}</th><th>{escape(headers[3])}</th></tr></thead>
+    <tbody>{tbody}</tbody>
+</table>
+<div class="footer">
+    <img src="{ips_logo}">
+    <img src="{hw_logo}">
+    <img src="{nl_logo}">
+</div>
+</body></html>"""
+
+
+def export_calendar_as_jpeg(
+    year: int = 2026,
+    filter_status: Optional[str] = None,
+    lang: str = "dut",
+) -> str:
+    """Genera JPEG del calendario via HTML+Chrome headless rendering."""
+    result = _prepare_calendar_data(year, filter_status, lang=lang)
+    if isinstance(result, str):
+        return result
+    all_events, rec_events, t = result
+
+    # Build table rows
+    rows = []
+    for idx, rec in enumerate(rec_events[:2]):
+        row = _event_to_row(rec, lang, code=f"R{idx+1}")
+        row[0] = rec.get("regla", "")
+        rows.append([str(row[i]) if row[i] is not None else "" for i in JPEG_COL_INDICES])
+    for idx, evento in enumerate(all_events):
+        row = _event_to_row(evento, lang, code=str(idx + 1))
+        rows.append([str(row[i]) if row[i] is not None else "" for i in JPEG_COL_INDICES])
+
+    headers = [t["headers"][i] for i in JPEG_COL_INDICES]
+    title = JPEG_TITLES.get(lang, JPEG_TITLES["dut"]).format(year=year)
+    html = _build_calendar_html(rows, headers, title)
+
+    # Viewport height: generous to avoid clipping
+    viewport_h = 80 + 22 + len(rows) * 20 + 130 + 80
+
+    from html2image import Html2Image
+    from PIL import Image, ImageChops
+
+    hti = Html2Image(
+        output_path=DATA_DIR,
+        size=(906, viewport_h),
+        custom_flags=["--no-sandbox", "--disable-gpu", "--hide-scrollbars"],
+    )
+    temp_png = f"_temp_{year}_{lang}.png"
+    hti.screenshot(html_str=html, save_as=temp_png)
+
+    # Trim bottom whitespace and convert to JPEG
+    png_path = os.path.join(DATA_DIR, temp_png)
+    img = Image.open(png_path)
+    bg = Image.new(img.mode, img.size, (255, 255, 255))
+    diff = ImageChops.difference(img, bg)
+    bbox = diff.getbbox()
+    if bbox:
+        img = img.crop((0, 0, img.width, bbox[3] + 8))
+
+    output_path = os.path.join(DATA_DIR, f"NV_{year}_Jaarplanning_{lang}.jpeg")
+    img.convert("RGB").save(output_path, "JPEG", quality=92)
+
+    try:
+        os.remove(png_path)
+    except OSError:
+        pass
     return output_path
 
 
@@ -510,5 +701,9 @@ if __name__ == "__main__":
     import sys
     yr = int(sys.argv[1]) if len(sys.argv) > 1 else 2026
     lang = sys.argv[2] if len(sys.argv) > 2 else "dut"
-    result = export_calendar(year=yr, lang=lang)
+    fmt = sys.argv[3] if len(sys.argv) > 3 else "xlsx"
+    if fmt == "jpeg":
+        result = export_calendar_as_jpeg(year=yr, lang=lang)
+    else:
+        result = export_calendar(year=yr, lang=lang)
     print(result)

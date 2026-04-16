@@ -257,6 +257,8 @@ async def _handle_command(phone: str, chat_id: str, text: str, provider) -> None
 
     if cmd in ("export", "export_excel"):
         await _cmd_export(phone, chat_id, provider)
+    elif cmd in ("jpeg", "export_jpeg"):
+        await _cmd_export_jpeg(phone, chat_id, provider)
     elif cmd in ("help", "ayuda"):
         _cmd_help(chat_id, provider)
     elif cmd in ("status", "estado"):
@@ -298,6 +300,36 @@ async def _cmd_export(phone: str, chat_id: str, provider) -> None:
     except Exception as e:
         logger.error(f"Error exportando calendario WA: {e}")
         provider.send_text(chat_id, f"Error generando el archivo: {e}")
+
+
+async def _cmd_export_jpeg(phone: str, chat_id: str, provider) -> None:
+    """Genera y envía imagen JPEG del calendario."""
+    contact_id, _ = identify_by_phone(phone)
+    if not contact_id:
+        provider.send_text(chat_id, "No estás identificado.")
+        return
+
+    contact = load_contact(contact_id)
+    rol = contact.get("rol_kalendbot", "readonly") if contact else "readonly"
+
+    if rol == "readonly":
+        provider.send_text(chat_id, "No tienes permisos para exportar el calendario.")
+        return
+
+    provider.send_text(chat_id, "Generando imagen del calendario...")
+
+    try:
+        from src.tools.calendar_exporter import export_calendar_as_jpeg
+        output_path = export_calendar_as_jpeg(year=2026)
+
+        if output_path.startswith("Error") or output_path.startswith("No hay"):
+            provider.send_text(chat_id, f"Error: {output_path}")
+            return
+
+        provider.send_image(chat_id, output_path, caption="Jaarplanning NV Mexico 2026")
+    except Exception as e:
+        logger.error(f"Error exportando JPEG WA: {e}")
+        provider.send_text(chat_id, f"Error generando la imagen: {e}")
 
 
 def _cmd_help(chat_id: str, provider) -> None:

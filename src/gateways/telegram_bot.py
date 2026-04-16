@@ -277,6 +277,11 @@ async def _handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if not text:
         return
 
+    # Mensajes de grupo: solo responder si el bot fue mencionado
+    if update.message.chat.type in ("group", "supergroup"):
+        await _handle_group_text(update, context, text)
+        return
+
     logger.info(f"Mensaje de {user.first_name} ({chat_id}): {text[:80]}")
 
     # Si el usuario está en proceso de registro, capturar su nombre
@@ -338,6 +343,92 @@ async def _handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
     await update.message.reply_text(response)
     logger.info(f"Respuesta enviada a {chat_id}: {response[:80]}")
+
+
+# ---------------------------------------------------------------------------
+# Grupo: detección de trigger y manejo de mensajes
+# ---------------------------------------------------------------------------
+
+def _get_bot_username(context: ContextTypes.DEFAULT_TYPE) -> str:
+    """Retorna el username del bot (sin @)."""
+    return (context.bot.username or "").lower()
+
+
+def _extract_group_text(text: str, bot_username: str) -> str | None:
+    """
+    Extrae texto limpio de un mensaje de grupo si menciona al bot.
+    Returns cleaned text or None if bot wasn't mentioned.
+    """
+    lower = text.lower()
+    # @botname at the start: "@Kalend0001_bot cambiar fecha..."
+    if bot_username and lower.startswith(f"@{bot_username}"):
+        clean = text[len(bot_username) + 1:].strip()
+        return clean if clean else None
+    # @botname anywhere in the text
+    if bot_username and f"@{bot_username}" in lower:
+        clean = re.sub(rf'@{re.escape(bot_username)}\s*', '', text, flags=re.IGNORECASE).strip()
+        return clean if clean else None
+    return None
+
+
+async def _handle_group_text(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str) -> None:
+    """Procesa mensajes de texto en grupo — solo responde si el bot fue mencionado."""
+    bot_username = _get_bot_username(context)
+    clean_text = _extract_group_text(text, bot_username)
+
+    if clean_text is None:
+        return  # No mencionaron al bot, ignorar
+
+    await _process_group_message(update, context, clean_text)
+
+
+async def _handle_group_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Procesa /comandos en grupo — todo va al agente como texto libre."""
+    if not update.message or not update.message.text:
+        return
+    if update.message.chat.type not in ("group", "supergroup"):
+        return
+
+    text = update.message.text.strip()
+    # Strip the /command (and optional @botname suffix)
+    # e.g., "/cambiar fecha..." or "/cambiar@Kalend0001_bot fecha..."
+    clean = re.sub(r'^/\S*\s*', '', text).strip()
+    # Also use the command itself as part of the message
+    cmd_match = re.match(r'^/(\w+)', text)
+    if cmd_match:
+        cmd = cmd_match.group(1).split("@")[0]  # Remove @botname from command
+        clean = f"{cmd} {clean}".strip()
+
+    if not clean:
+        return
+
+    await _process_group_message(update, context, clean)
+
+
+async def _process_group_message(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str) -> None:
+    """Procesa un mensaje de grupo dirigido al bot."""
+    user = update.message.from_user
+    telegram_id = user.id
+
+    contact_id = identify_by_telegram_id(telegram_id)
+    if not contact_id:
+        await update.message.reply_text(
+            "Ik ken je nog niet. Stuur mij een privébericht om je te registreren.",
+            reply_to_message_id=update.message.message_id,
+        )
+        return
+
+    logger.info(f"Grupo trigger de {contact_id}: {text[:80]}")
+
+    message = f"[Grupo] {text}"
+    response = handle_message(phone=str(telegram_id), message=message, contact_id=contact_id)
+    response = strip_markdown(response)
+
+    await update.message.reply_text(
+        response,
+        reply_to_message_id=update.message.message_id,
+    )
+    logger.info(f"Grupo respuesta a {contact_id}: {response[:80]}")
 
 
 async def _handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -534,6 +625,46 @@ async def _handle_export_excel(update: Update, context: ContextTypes.DEFAULT_TYP
         await update.message.reply_text(f"Error generando el archivo: {e}")
 
 
+async def _handle_export_jpeg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Comando /export_jpeg — genera y envía imagen JPEG del calendario."""
+    telegram_id = update.message.from_user.id
+    contact_id = identify_by_telegram_id(telegram_id)
+
+    if not contact_id:
+        await update.message.reply_text("No estás identificado. Usa /start primero.")
+        return
+
+    try:
+        with open(os.path.join(DATA_DIR, "contactos", f"{contact_id}.json"), "r", encoding="utf-8") as f:
+            contact_data = json.load(f)
+        rol = contact_data.get("rol_kalendbot", "readonly")
+    except (FileNotFoundError, json.JSONDecodeError):
+        rol = "readonly"
+
+    if rol == "readonly":
+        await update.message.reply_text("No tienes permisos para exportar el calendario.")
+        return
+
+    await update.message.reply_text("Generando imagen del calendario...")
+
+    try:
+        from src.tools.calendar_exporter import export_calendar_as_jpeg
+        output_path = export_calendar_as_jpeg(year=2026)
+
+        if output_path.startswith("Error") or output_path.startswith("No hay"):
+            await update.message.reply_text(f"Error: {output_path}")
+            return
+
+        with open(output_path, "rb") as photo:
+            await update.message.reply_photo(
+                photo=photo,
+                caption="Jaarplanning NV Mexico 2026",
+            )
+    except Exception as e:
+        logger.error(f"Error exportando JPEG: {e}")
+        await update.message.reply_text(f"Error generando la imagen: {e}")
+
+
 def start_telegram_bot() -> None:
     """Inicia el bot de Telegram con polling."""
     if not TELEGRAM_BOT_TOKEN:
@@ -548,8 +679,12 @@ def start_telegram_bot() -> None:
     app.add_handler(ChatMemberHandler(_handle_new_group, ChatMemberHandler.MY_CHAT_MEMBER))
     app.add_handler(CommandHandler("start", _start_command))
     app.add_handler(CommandHandler("export_excel", _handle_export_excel))
+    app.add_handler(CommandHandler("export_jpeg", _handle_export_jpeg))
     app.add_handler(CallbackQueryHandler(_handle_approval))
     app.add_handler(MessageHandler(filters.CONTACT, _handle_contact))
+    # Grupo: capturar /comandos como texto libre para el agente
+    group_filter = filters.ChatType.GROUPS & filters.COMMAND
+    app.add_handler(MessageHandler(group_filter, _handle_group_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_text))
 
     # Programar recordatorios diarios
