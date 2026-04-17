@@ -376,6 +376,9 @@ def _prepare_calendar_data(
 
     all_events.sort(key=lambda e: e.get("fecha", e.get("fecha_inicio", "9999-12-31")))
 
+    # Filter hidden events
+    all_events = [e for e in all_events if e.get("show_in_export", True)]
+
     if filter_status:
         all_events = [e for e in all_events if e.get("estado") == filter_status]
     if filter_contacto:

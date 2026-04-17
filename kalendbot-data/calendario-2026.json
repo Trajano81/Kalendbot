@@ -152,6 +152,7 @@
       "fecha_original": "2026-02-01",
       "fecha_exacta": true,
       "estado": "confirmado",
+      "show_in_export": false,
       "partner_id": "nv-mexico",
       "contacto_ids": [
         "rocco-van-velzen"
@@ -269,8 +270,8 @@
       "id": "koningsdag",
       "nombre": "Koningsdag",
       "partner_nombre": "De Sprinkhaan/ Ambassade",
-      "fecha": "2026-05-03",
-      "fecha_original": "2026-04-25",
+      "fecha": "2026-04-25",
+      "fecha_original": "2026-05-03",
       "nota_fecha": "Movido al 3 de mayo por Semana Santa",
       "estado": "confirmado",
       "partner_id": "de-sprinkhaan",
@@ -301,7 +302,9 @@
       "reel_post": true,
       "eventbrite": true,
       "condicional": false,
-      "texto_social": "👑 Koningsdag in Mexico – Feestavond!\nKoningsdag komt er aan, maar dit jaar is het tevens 75 jaar bevrijdingsdag, dus een dubbel feestje. Vandaar dat we voor de datum 3 mei gekozen hebben (Ook van wege Samena Santa). Ook hebben we dit jaar een andere locatie omdat we iets speciaals wilden doen: Lucerna 42 in Juarez. Een prachtig koloniaans gebouw dat vroeger als club/ discotheek fungeerde. Het thema dit jaar zal dus meer liggen op het volwassenen gedeelte in de vorm van een knalfeest dat tot in de late uurtjes door kan gaan. In de middag zal ook gewoon het kinderprogramma plaatsvinden, verzorgt door de sprinkhaan met onder andere schilderen met van Gogh en een kinder disco. Het beloofd dus een super dag te worden voor jong en oud.\n\nKoop je kaartjes via deze link: Let op er zijn een bepérkt aantal plekken. Zorg dus dat je op tijd bent. Nadere informatie over de kaartjes vind je ook via de link.\n\n📅 3 mei: kinderprogramma 3pm-7pm. Avond feest 7pm-2am\n📍 Lucerna 42, Juarez, CDMX"
+      "texto_social": "👑 Koningsdag in Mexico – Feestavond!\nKoningsdag komt er aan, maar dit jaar is het tevens 75 jaar bevrijdingsdag, dus een dubbel feestje. Vandaar dat we voor de datum 3 mei gekozen hebben (Ook van wege Samena Santa). Ook hebben we dit jaar een andere locatie omdat we iets speciaals wilden doen: Lucerna 42 in Juarez. Een prachtig koloniaans gebouw dat vroeger als club/ discotheek fungeerde. Het thema dit jaar zal dus meer liggen op het volwassenen gedeelte in de vorm van een knalfeest dat tot in de late uurtjes door kan gaan. In de middag zal ook gewoon het kinderprogramma plaatsvinden, verzorgt door de sprinkhaan met onder andere schilderen met van Gogh en een kinder disco. Het beloofd dus een super dag te worden voor jong en oud.\n\nKoop je kaartjes via deze link: Let op er zijn een bepérkt aantal plekken. Zorg dus dat je op tijd bent. Nadere informatie over de kaartjes vind je ook via de link.\n\n📅 3 mei: kinderprogramma 3pm-7pm. Avond feest 7pm-2am\n📍 Lucerna 42, Juarez, CDMX",
+      "ultima_actualizacion": "2026-04-15T14:57:14.746144",
+      "fecha_exacta": true
     },
     {
       "id": "taalkamp-kinderen",
@@ -336,6 +339,7 @@
       "fecha_exacta": true,
       "nota_fecha": "Abril/Mei según Excel",
       "estado": "cancelado",
+      "show_in_export": false,
       "partner_id": "atk",
       "contacto_ids": [
         "anne-schouten"
@@ -662,7 +666,7 @@
     {
       "id": "rondleiding-chapultepec",
       "nombre": "Rondleiding Castillo Chapultepec",
-      "fecha": "2026-09-15",
+      "fecha": "2026-08-01",
       "fecha_exacta": true,
       "nota_fecha": "Augustus volgens Sheet1 (V3 referentie)",
       "estado": "confirmado",
@@ -690,8 +694,8 @@
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
-      "ultima_actualizacion": "2026-04-14T13:04:14.772953",
-      "fecha_original": "2026-08-15"
+      "ultima_actualizacion": "2026-04-15T14:52:16.970959",
+      "fecha_original": "2026-09-15"
     },
     {
       "id": "popo-septiembre",

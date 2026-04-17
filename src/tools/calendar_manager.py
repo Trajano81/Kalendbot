@@ -28,12 +28,13 @@ def _save_calendar(data: dict, year: int = 2026):
 
 class CalendarManagerInput(BaseModel):
     action: str = Field(
-        description="Acción a ejecutar: list_all, get_event, list_by_status, list_by_contact, list_pending, list_upcoming, update_status"
+        description="Acción a ejecutar: list_all, get_event, list_by_status, list_by_contact, list_pending, list_upcoming, update_status, update_show_export"
     )
     year: int = Field(default=2026, description="Año del calendario")
-    event_id: Optional[str] = Field(default=None, description="ID del evento (para get_event, update_status)")
-    status: Optional[str] = Field(default=None, description="Estado: pendiente, confirmado, cancelado (para list_by_status, update_status)")
+    event_id: Optional[str] = Field(default=None, description="ID del evento (para get_event, update_status, update_show_export)")
+    status: Optional[str] = Field(default=None, description="Estado: pendiente, confirmado, cancelado (para list_by_status, update_status). También fecha de instancia recurrente (para update_show_export)")
     contact_id: Optional[str] = Field(default=None, description="ID del contacto (para list_by_contact)")
+    show_in_export: Optional[bool] = Field(default=None, description="Mostrar en exports: true/false (para update_show_export)")
 
 
 def calendar_manager(
@@ -42,6 +43,7 @@ def calendar_manager(
     event_id: Optional[str] = None,
     status: Optional[str] = None,
     contact_id: Optional[str] = None,
+    show_in_export: Optional[bool] = None,
 ) -> str:
     """Gestiona el calendario de eventos de NV Mexico."""
     try:
@@ -138,13 +140,44 @@ def calendar_manager(
                 return f"Evento '{event_id}' actualizado: {old_status} → {status}"
         return f"Evento '{event_id}' no encontrado"
 
+    elif action == "update_show_export":
+        if not event_id or show_in_export is None:
+            return "Error: Faltan event_id y/o show_in_export"
+        # Search in regular events
+        for e in all_events:
+            if e["id"] == event_id:
+                old_val = e.get("show_in_export", True)
+                e["show_in_export"] = show_in_export
+                e["ultima_actualizacion"] = datetime.now().isoformat()
+                _save_calendar(cal, year)
+                return f"Evento '{event_id}' show_in_export: {old_val} → {show_in_export}"
+        # Search in recurring events (optionally target a specific instance via status=fecha)
+        for rec in recurrentes:
+            if rec["id"] == event_id:
+                if status:
+                    # Target specific instance by fecha
+                    for inst in rec.get("instancias_2026", []):
+                        if inst.get("fecha") == status:
+                            old_val = inst.get("show_in_export", True)
+                            inst["show_in_export"] = show_in_export
+                            _save_calendar(cal, year)
+                            return f"Instancia '{event_id}' fecha {status} show_in_export: {old_val} → {show_in_export}"
+                    return f"Instancia con fecha '{status}' no encontrada en '{event_id}'"
+                else:
+                    # Target the whole recurring event
+                    old_val = rec.get("show_in_export", True)
+                    rec["show_in_export"] = show_in_export
+                    _save_calendar(cal, year)
+                    return f"Evento recurrente '{event_id}' show_in_export: {old_val} → {show_in_export}"
+        return f"Evento '{event_id}' no encontrado"
+
     else:
-        return f"Acción desconocida: {action}. Opciones: list_all, get_event, list_by_status, list_by_contact, list_pending, list_upcoming, update_status"
+        return f"Acción desconocida: {action}. Opciones: list_all, get_event, list_by_status, list_by_contact, list_pending, list_upcoming, update_status, update_show_export"
 
 
 calendar_manager_tool = StructuredTool.from_function(
     name="CalendarManager",
-    description="Lee y actualiza el calendario de eventos de NV Mexico. Acciones: list_all, get_event, list_by_status, list_by_contact, list_pending (solo pendientes, separados en futuros/pasados), list_upcoming (todos los futuros no cancelados), update_status (estados: pendiente/confirmado/cancelado).",
+    description="Lee y actualiza el calendario de eventos de NV Mexico. Acciones: list_all, get_event, list_by_status, list_by_contact, list_pending (solo pendientes, separados en futuros/pasados), list_upcoming (todos los futuros no cancelados), update_status (estados: pendiente/confirmado/cancelado), update_show_export (mostrar/ocultar en exports, usa status=fecha para instancias recurrentes específicas).",
     func=calendar_manager,
     args_schema=CalendarManagerInput,
 )
