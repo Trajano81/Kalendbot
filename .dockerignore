@@ -1,0 +1,14 @@
+.env
+.git
+.claude
+_bmad
+_bmad-output
+docs
+design-artifacts
+assets
+waha-sessions
+*.xlsx
+*.md
+__pycache__
+*.pyc
+.pytest_cache
