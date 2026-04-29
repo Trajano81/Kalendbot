@@ -5,6 +5,7 @@ Usa polling (sin necesidad de URL pública).
 import os
 import re
 import json
+import uuid
 import logging
 from datetime import datetime, time, date
 from zoneinfo import ZoneInfo
@@ -405,6 +406,41 @@ async def _handle_group_command(update: Update, context: ContextTypes.DEFAULT_TY
     await _process_group_message(update, context, clean)
 
 
+def _split_multi_task(text: str) -> list[str]:
+    """Divide un mensaje /cambiar con múltiples tareas (separadas por *. o -) en tareas individuales."""
+    if not re.match(r'^(cambiar?|change)\b', text, re.IGNORECASE):
+        return [text]
+
+    lines = text.split("\n")
+    tasks = []
+    current = []
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        # Nueva tarea si empieza con *. o - (bullet point)
+        if re.match(r'^(\*\.?\s+|[-–]\s+)', stripped) and current:
+            tasks.append("\n".join(current))
+            current = [stripped]
+        else:
+            current.append(stripped)
+
+    if current:
+        tasks.append("\n".join(current))
+
+    # Limpiar prefijos de bullet y asegurar contexto "cambiar"
+    cleaned = []
+    for task in tasks:
+        task = re.sub(r'^\*\.?\s*', '', task).strip()
+        task = re.sub(r'^[-–]\s*', '', task).strip()
+        if not re.match(r'^(cambiar?|change)\b', task, re.IGNORECASE):
+            task = f"cambiar {task}"
+        cleaned.append(task)
+
+    return cleaned if len(cleaned) > 1 else [text]
+
+
 async def _process_group_message(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str) -> None:
     """Procesa un mensaje de grupo dirigido al bot."""
     user = update.message.from_user
@@ -420,15 +456,38 @@ async def _process_group_message(update: Update, context: ContextTypes.DEFAULT_T
 
     logger.info(f"Grupo trigger de {contact_id}: {text[:80]}")
 
-    message = f"[Grupo] {text}"
-    response = handle_message(phone=str(telegram_id), message=message, contact_id=contact_id)
-    response = strip_markdown(response)
+    # Pre-procesador: dividir mensajes multi-tarea en tareas individuales
+    tasks = _split_multi_task(text)
 
-    await update.message.reply_text(
-        response,
-        reply_to_message_id=update.message.message_id,
-    )
-    logger.info(f"Grupo respuesta a {contact_id}: {response[:80]}")
+    if len(tasks) > 1:
+        logger.info(f"Multi-tarea detectado: {len(tasks)} tareas para {contact_id}")
+        responses = []
+        for i, task in enumerate(tasks, 1):
+            logger.info(f"  Tarea {i}/{len(tasks)}: {task[:60]}")
+            batch_thread = f"{contact_id}-batch-{uuid.uuid4().hex[:8]}"
+            message = f"[Grupo] [BATCH: aplica cambios directo con batch_confirm, NO uses batch_preview ni GroupNotifier] {task}"
+            resp = handle_message(phone=str(telegram_id), message=message, contact_id=contact_id, thread_id=batch_thread)
+            responses.append(f"{i}. {strip_markdown(resp)}")
+
+        combined = "\n\n".join(responses)
+        if len(combined) > 4000:
+            combined = combined[:4000] + "\n\n... (respuesta truncada)"
+
+        await update.message.reply_text(
+            combined,
+            reply_to_message_id=update.message.message_id,
+        )
+        logger.info(f"Grupo multi-respuesta a {contact_id}: {len(tasks)} tareas procesadas")
+    else:
+        message = f"[Grupo] {text}"
+        response = handle_message(phone=str(telegram_id), message=message, contact_id=contact_id)
+        response = strip_markdown(response)
+
+        await update.message.reply_text(
+            response,
+            reply_to_message_id=update.message.message_id,
+        )
+        logger.info(f"Grupo respuesta a {contact_id}: {response[:80]}")
 
 
 async def _handle_contact(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -665,6 +724,40 @@ async def _handle_export_jpeg(update: Update, context: ContextTypes.DEFAULT_TYPE
         await update.message.reply_text(f"Error generando la imagen: {e}")
 
 
+async def _handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Comando /help — lista comandos disponibles."""
+    help_text = (
+        "Comandos disponibles:\n\n"
+        "Calendario:\n"
+        "/cambiar (o /change) — Editar campos de eventos\n"
+        "/estado (o /status) — Cambiar estado de un evento\n"
+        "/buscar (o /search) — Buscar eventos por nombre\n"
+        "/pendientes — Listar eventos pendientes\n"
+        "/proximos — Listar próximos eventos\n"
+        "/evento — Ver detalle de un evento\n"
+        "/deshacer (o /undo) — Revertir último cambio\n\n"
+        "Exportar:\n"
+        "/export_excel — Exportar calendario a Excel\n"
+        "/export_jpeg — Exportar calendario como imagen\n"
+        "/export_instructions — Ver campos editables y permisos\n\n"
+        "/help — Mostrar esta ayuda\n\n"
+        "En grupo, tambien puedes mencionarme con @KalendBot seguido de tu pregunta.\n\n"
+        "Tip: Usa bullet points (*.) para enviar multiples cambios en un solo mensaje."
+    )
+    await update.message.reply_text(help_text)
+
+
+async def _handle_export_instructions(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Comando /export_instructions — envía guía de campos editables y permisos."""
+    from src.tools.rules_engine import _get_instrucciones
+    try:
+        instructions = _get_instrucciones()
+        await update.message.reply_text(instructions)
+    except Exception as e:
+        logger.error(f"Error generando instrucciones: {e}")
+        await update.message.reply_text(f"Error generando instrucciones: {e}")
+
+
 def start_telegram_bot() -> None:
     """Inicia el bot de Telegram con polling."""
     if not TELEGRAM_BOT_TOKEN:
@@ -680,6 +773,8 @@ def start_telegram_bot() -> None:
     app.add_handler(CommandHandler("start", _start_command))
     app.add_handler(CommandHandler("export_excel", _handle_export_excel))
     app.add_handler(CommandHandler("export_jpeg", _handle_export_jpeg))
+    app.add_handler(CommandHandler("export_instructions", _handle_export_instructions))
+    app.add_handler(CommandHandler("help", _handle_help))
     app.add_handler(CallbackQueryHandler(_handle_approval))
     app.add_handler(MessageHandler(filters.CONTACT, _handle_contact))
     # Grupo: capturar /comandos como texto libre para el agente
