@@ -1,5 +1,5 @@
 """
-Servidor FastAPI que recibe webhooks de WhatsApp (WAHA) y Evolution API,
+Servidor FastAPI que recibe webhooks de WhatsApp (WAHA)
 y los procesa con el agente KalendBot.
 """
 import os
@@ -9,8 +9,6 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 import uvicorn
 
-from src.agent import handle_message
-from src.gateways.evolution import send_message, parse_incoming_webhook
 from src.gateways.whatsapp_bot import handle_whatsapp_message, send_whatsapp_reminders
 
 load_dotenv()
@@ -102,30 +100,6 @@ async def whatsapp_webhook(request: Request):
         return {"status": "processed"}
 
     return {"status": "ignored", "event": event}
-
-
-@app.post("/webhook/evolution")
-async def evolution_webhook(request: Request):
-    """Recibe webhooks de Evolution API (legacy)."""
-    data = await request.json()
-    parsed = parse_incoming_webhook(data)
-
-    if not parsed:
-        return {"status": "ignored"}
-
-    if parsed["is_group"]:
-        logger.info(f"Mensaje de grupo ignorado: {parsed['message_text'][:50]}")
-        return {"status": "group_ignored"}
-
-    phone = parsed["sender_phone"]
-    message = parsed["message_text"]
-
-    logger.info(f"Mensaje entrante de {phone}: {message[:80]}")
-
-    response = handle_message(phone, message)
-    send_message(phone, response)
-
-    return {"status": "processed", "to": phone}
 
 
 # ---------------------------------------------------------------------------
