@@ -1,11 +1,11 @@
 ---
 project_name: 'Kalendbot'
 user_name: 'Kmiloaparicio'
-date: '2026-03-20'
+date: '2026-04-22'
 sections_completed:
-  ['technology_stack', 'language_rules', 'framework_rules', 'testing_rules', 'quality_rules', 'workflow_rules', 'anti_patterns']
+  ['technology_stack', 'language_rules', 'framework_rules', 'gateway_rules', 'batch_editing_rules', 'exporter_rules', 'testing_rules', 'quality_rules', 'workflow_rules', 'anti_patterns']
 status: 'complete'
-rule_count: 62
+rule_count: 78
 optimized_for_llm: true
 ---
 
@@ -20,15 +20,20 @@ Coordina 30 eventos anuales con 9 proveedores/contactos vía WhatsApp.
 
 ## Technology Stack & Versions
 
-- **Python** 3.10+ — usar type hints modernos (`str | None`, no `Optional[str]` en firmas)
+- **Python** 3.11+ — usar type hints modernos (`str | None`, no `Optional[str]` en firmas)
 - **LangChain** >= 0.3.0 — API moderna OBLIGATORIA:
   - `from langchain.agents import create_agent` (NO `initialize_agent`, NO `AgentType`)
   - `from langchain_core.tools import Tool, StructuredTool` (NO `from langchain.tools`)
   - `from langgraph.checkpoint.memory import MemorySaver` (NO `ConversationBufferMemory`)
 - **OpenAI** GPT-4o-mini — temperature 0.1, org con 200K TPM compartidos
-- **FastAPI** >= 0.115.0 + Uvicorn (webhook WhatsApp)
-- **httpx** >= 0.27.0 (Evolution API client)
+- **FastAPI** >= 0.115.0 + Uvicorn (webhook WhatsApp via WAHA)
+- **WAHA** (WhatsApp HTTP API) — provider oficial WhatsApp. Evolution API es legacy/referencia
+- **httpx** >= 0.27.0 (WAHA REST client)
+- **Docker Compose** — WAHA + KalendBot en red privada. Webhook NO expuesto al host
+- **html2image** >= 2.0.0 + **Pillow** >= 10.0.0 (JPEG export via Chromium headless)
+- **APScheduler** >= 3.10.0 (recordatorios diarios)
 - **Almacenamiento:** JSON files en `kalendbot-data/` — sin DB, Git como versionamiento
+- **9 tools** registradas en `src/tools/__init__.py` → `ALL_TOOLS`
 
 ---
 
@@ -101,7 +106,7 @@ Coordina 30 eventos anuales con 9 proveedores/contactos vía WhatsApp.
 **Decisiones de arquitectura (ADRs):**
 - MemorySaver es IN-MEMORY — se pierde al reiniciar. Para producción, migrar a persistencia real (SQLite/PostgreSQL checkpointer)
 - FAQ bypass es un cortocircuito pre-agente — no afecta el flujo principal si no matchea
-- Un solo agente con 8 tools. Si el system prompt supera ~2000 tokens o se agregan >12 tools, considerar sub-agentes
+- Un solo agente con 9 tools. Si el system prompt supera ~2000 tokens o se agregan >12 tools, considerar sub-agentes
 - recursion_limit=25 es empírico (~10 tool calls máx). Si una query necesita más, mejorar el prompt, no el límite
 - Contactos no identificados reciben `unknown-{phone[-4:]}` — riesgo de colisión. En producción, pedir identificación al usuario
 
@@ -114,6 +119,63 @@ Coordina 30 eventos anuales con 9 proveedores/contactos vía WhatsApp.
 - Logging de tool calls: cuando `recursion_limit` se alcanza, loggear la última tool invocada y su error
 - Sincronización: al agregar/quitar tools de `ALL_TOOLS`, SIEMPRE actualizar la sección HERRAMIENTAS del system prompt
 - Output de tools: para listas >20 items, considerar resumen o paginación para no consumir contexto del agente
+
+---
+
+### Reglas de Gateway (Multi-canal)
+
+**Arquitectura (6 archivos activos):**
+- `src/gateways/dispatcher.py` — router canal-agnóstico: `send_dm()` y `send_to_group()`
+- `src/gateways/waha_provider.py` — WAHAProvider REST (send_text, send_reply, send_file, send_image) + factory `get_whatsapp_provider()` + utilities (phone_to_chat_id, normalize_phone)
+- `src/gateways/telegram_bot.py` — polling con python-telegram-bot (NO webhooks)
+- `src/gateways/whatsapp_bot.py` — webhook handler para WAHA (llamado desde server.py)
+- `src/gateways/contacts.py` — identify_by_phone, create_contact_json, normalize_phone
+- `src/gateways/templates.py` — templates de mensajes renderizados
+- ~~`src/gateways/evolution.py`~~ — ELIMINADO. Era código muerto (Evolution API legacy)
+- ~~`src/gateways/whatsapp_provider.py`~~ — FUSIONADO en `waha_provider.py`
+
+**Reglas críticas:**
+- El dispatcher decide el canal basándose en env vars, NO en lógica de negocio
+- Telegram usa polling (long-poll a servidores de Telegram). WhatsApp usa webhooks (WAHA→FastAPI)
+- Grupo dual: `TELEGRAM_GROUP_CHAT_ID` + `WHATSAPP_GROUP_CHAT_ID` → dispatcher envía a ambos
+- WhatsApp registration flow: usuario nuevo → pide nombre → admin aprueba/rechaza → crea contacto
+- Mensajes de grupo WhatsApp: solo responder si @mention del bot o /comando
+- `telegram_bot.py` y `whatsapp_bot.py` se mantienen separados: protocolos distintos (polling vs webhook), lógica distinta (registration flow solo en WA), 600+ líneas cada uno
+
+**Docker Compose:**
+- WAHA y KalendBot en red Docker privada — webhook solo accesible internamente
+- `WHATSAPP_HOOK_URL=http://kalendbot:8000/webhook/whatsapp` (DNS interno Docker)
+- Puerto 8000 de KalendBot NO expuesto al host (seguridad por arquitectura)
+- WAHA dashboard expuesto en puerto 3010 del host
+- `kalendbot-data/` montado como volumen para persistencia
+
+### Reglas de Batch Editing
+
+**Patrón preview/confirm/undo:**
+- `batch_preview`: muestra cambios propuestos + diagnóstico de impacto ANTES de aplicar
+- `batch_confirm`: aplica cambios tras aprobación del usuario
+- `undo_last`: revierte el último batch edit
+- Pipe-separated changes: `"campo1:valor1|campo2:valor2"` para ediciones múltiples
+
+**instrucciones-edicion.json:**
+- Define 22 campos editables con tipo de validación (date, bool, enum, precio)
+- Permisos por campo: "owner" (contacto puede editar sus eventos) vs "admin" (solo admin)
+- Categorías de impacto: recordatorios, conflictos, flyers, grupo, export
+- Campo `show_in_export`: controla visibilidad en exports (soporta per-instancia en recurrentes)
+
+### Reglas de CalendarExporter
+
+**Exports disponibles:**
+- `export_calendar(year, lang)` → Excel .xlsx con headers traducidos
+- `export_calendar_as_jpeg(year, lang)` → JPEG via HTML+Chromium headless
+- Idiomas soportados: `dut` (default), `eng`, `spa`, `por`
+- Traducción batch via Claude Sonnet 4 (`langchain-anthropic`)
+
+**Reglas:**
+- `show_in_export: False` oculta eventos de exports (respeta per-instancia en recurrentes)
+- `expandir_en_export` controla si instancias recurrentes se expanden
+- JPEG requiere Chromium instalado (Docker lo incluye via `apt-get install chromium`)
+- Ambos exports usan `_prepare_calendar_data()` como helper compartido
 
 ---
 
@@ -176,8 +238,19 @@ Coordina 30 eventos anuales con 9 proveedores/contactos vía WhatsApp.
 
 **Variables de entorno:**
 - SIEMPRE usar `os.getenv("NOMBRE", "default")` — nunca hardcodear valores
-- Variables conocidas: `OPENAI_API_KEY`, `KALENDBOT_DATA_DIR`, `EVOLUTION_API_URL`, `EVOLUTION_API_KEY`, `EVOLUTION_INSTANCE_NAME`, `KALENDBOT_GROUP_CHAT_ID`
-- Nuevas env vars deben documentarse en la sección correspondiente
+- Variables conocidas:
+  - `OPENAI_API_KEY` — GPT-4o-mini
+  - `KALENDBOT_DATA_DIR` — raíz de datos JSON (default: `./kalendbot-data`)
+  - `KALENDBOT_WEBHOOK_PORT` — puerto FastAPI (default: `8000`)
+  - `TELEGRAM_BOT_TOKEN` — token del bot de Telegram
+  - `TELEGRAM_GROUP_CHAT_ID` — grupo de Telegram para notificaciones
+  - `WAHA_API_URL` — endpoint WAHA (default: `http://localhost:3000`, en Docker: `http://waha:3000`)
+  - `WAHA_API_KEY` — autenticación WAHA
+  - `WAHA_SESSION_NAME` — sesión WAHA (default: `kalendbot`)
+  - `WHATSAPP_GROUP_CHAT_ID` — grupo de WhatsApp para notificaciones
+  - `WHATSAPP_BOT_JID` — JID del bot (formato: `52XXXXXXXXX@c.us`)
+- ~~EVOLUTION_API_*~~ — ELIMINADAS (Evolution API removida)
+- Nuevas env vars deben documentarse aquí
 
 **Naming:**
 - Archivos: `snake_case.py`
@@ -336,44 +409,26 @@ Cada contacto tiene un `rol_kalendbot` en su JSON (`kalendbot-data/contactos/*.j
 
 ## Roadmap de Desarrollo
 
-### Fase 1: Estabilización del agente (actual)
-> Objetivo: agente funcional vía CLI antes de conectar WhatsApp.
+### Fase 1: Estabilización del agente ✅ COMPLETADA
+- [x] MVP: Agente LangChain con 9 tools + CLI
+- [x] Fix ISSUE-01 a 05, OBS-01 a 06
+- [x] RBAC: 4 roles + system prompts dinámicos
+- [x] Batch editing con preview/confirm/undo
+- Detalle: `_bmad-output/planning-artifacts/epics-retrospective.md` (Epics 1-6)
 
-- [x] MVP: Agente LangChain con 8 tools + CLI
-- [x] Fix ISSUE-01 a 05
-- [x] Fix OBS-01, 04, 05
-- [x] OBS-02: Nations League eliminado (no estaba en Excel principal)
-- [x] OBS-06: 5 eventos pasados confirmados (Nieuwjaarsreceptie, Oproep, Elfstedentocht, Klimtocht, Dictee)
-- [ ] Testing CLI: completar escenarios pendientes
+### Fase 2: Multi-canal + Exports ✅ COMPLETADA
+- [x] WhatsApp via WAHA (webhook handler, registration flow, grupo)
+- [x] Telegram bot (polling, grupo via @mention)
+- [x] CalendarExporter V3 (Excel + JPEG, multi-idioma)
+- [x] Docker Compose (WAHA + KalendBot, red privada)
+- [x] Dispatcher canal-agnóstico (Telegram, WhatsApp, o ambos)
 
-### Fase 2: Integración WhatsApp — Evolution API
-> Objetivo: recibir y responder mensajes reales de WhatsApp.
-
-- [ ] Investigar Evolution API: endpoints, autenticación, webhooks
-- [ ] Implementar gateway WhatsApp (`src/gateways/evolution.py`)
-- [ ] Implementar sistema de permisos por contacto (`rol_kalendbot`)
-- [ ] Implementar whitelist de contactos autorizados
-- [ ] Conectar `server.py` con el gateway
-- [ ] Tests unitarios (Nivel 1)
-- [ ] Testing con número real
-
-### Fase 3: Flujos de negocio completos
-> Objetivo: bot manejando flujos reales de NV Mexico.
-
-- [ ] Flujo de confirmación de fechas con proveedores
-- [ ] Flujo de solicitud y aprobación de flyers
-- [ ] Notificaciones grupales
-- [ ] Escalamiento a Kmilo/Hanna
-- [ ] Reportes de estado
-
-### Fase 4: Producción
-> Objetivo: bot operando en el día a día.
-
-- [ ] Tests integración + regression (Nivel 2)
-- [ ] Migrar MemorySaver a persistencia real
-- [ ] File locking o migración a DB
-- [ ] Seguridad: whitelist, rate limit, validación IDs
-- [ ] Deploy (servidor, dominio, SSL)
+### Fase 3: Forward Epics (próximo trabajo)
+Detalle completo: `_bmad-output/planning-artifacts/epics-forward.md`
+- Epic 7: Gateway Flexible — tests, 5 roles, whitelist, rate limit, entry point unificado
+- Epic 9: Recordatorios Automatizados — sin agente LLM, cron/scheduler
+- Epic 10: Campos Fase 2 — contacto_ids, canal_preferido, texto_social, recurrentes
+- Epic 11: Hardening — MemorySaver SQLite, file locking concurrente
 
 ---
 
@@ -383,7 +438,7 @@ Cada contacto tiene un `rol_kalendbot` en su JSON (`kalendbot-data/contactos/*.j
 - **Contactos** (`kalendbot-data/contactos/`): Personas del Excel columna L (nombre) + M (teléfono)
 - **Flyer responsibility** (columna N): Si hay nombre → esa persona. Si vacío → Hanna van Rijsse
 - **Calendario:** `kalendbot-data/calendario-2026.json` — 30 eventos
-- **Config:** `kalendbot-data/config/` — tiers, precedencia, restricciones, eventos-externos, faq
+- **Config:** `kalendbot-data/config/` — tiers, precedencia, restricciones, eventos-externos, faq, instrucciones-edicion, recordatorios, recordatorios-enviados
 
 ---
 
@@ -401,4 +456,4 @@ Cada contacto tiene un `rol_kalendbot` en su JSON (`kalendbot-data/contactos/*.j
 - Revisar al cerrar cada fase para optimizar
 - Eliminar reglas que se vuelvan obvias con el tiempo
 
-Última actualización: 2026-03-20
+Última actualización: 2026-04-22

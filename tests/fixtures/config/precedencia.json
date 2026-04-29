@@ -1,0 +1,8 @@
+{
+  "reglas": [
+    {
+      "id": "primero-en-confirmar",
+      "regla": "El primer evento en confirmar fecha tiene prioridad"
+    }
+  ]
+}

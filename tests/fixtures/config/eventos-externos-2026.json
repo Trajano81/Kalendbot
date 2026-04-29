@@ -1,0 +1,10 @@
+{
+  "eventos_externos": [
+    {
+      "nombre": "Copa del Mundo 2026",
+      "fecha_inicio": "2026-06-11",
+      "fecha_fin": "2026-07-19",
+      "tipo": "deportivo"
+    }
+  ]
+}

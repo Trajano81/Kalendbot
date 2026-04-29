@@ -1,0 +1,16 @@
+{
+  "feriados_mexico_2026": [
+    {"fecha": "2026-01-01", "nombre": "Ano Nuevo"},
+    {"fecha": "2026-05-01", "nombre": "Dia del Trabajo"},
+    {"fecha": "2026-09-16", "nombre": "Independencia"},
+    {"fecha": "2026-12-25", "nombre": "Navidad"}
+  ],
+  "reglas_implicitas": [
+    {
+      "id": "no-navidad",
+      "regla": "No programar eventos en Navidad/Ano Nuevo",
+      "activa": true,
+      "evidencia": "Feriados oficiales mexicanos"
+    }
+  ]
+}

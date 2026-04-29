@@ -1,0 +1,67 @@
+# generated: 2026-04-22
+# last_updated: 2026-04-24
+# project: Kalendbot
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+
+generated: 2026-04-22
+last_updated: 2026-04-24
+project: Kalendbot
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # === Epic 7: Gateway Flexible (Telegram/WhatsApp) — Prioridad Alta ===
+  epic-7: in-progress
+  7-1-test-suite-fundacional: done
+  7-2-migracion-5-roles: backlog
+  7-3-whitelist-contactos-autorizados: backlog
+  7-4-rate-limiting-contactos-desconocidos: backlog
+  7-5-whatsapp-bot-handler-waha: backlog
+  7-6-comandos-exportacion-whatsapp: backlog
+  7-7-verificacion-grupo-dual: backlog
+  7-8-entry-point-unificado-docker-compose: backlog
+  epic-7-retrospective: optional
+
+  # === Epic 8: Testing Comprehensivo — DISUELTO ===
+  # Testing embebido como ACs dentro de cada story (Pre-mortem)
+
+  # === Epic 9: Recordatorios Automatizados (Sin Agente) — Prioridad Media ===
+  epic-9: backlog
+  9-1-reminder-check-diario: backlog
+  9-2-delivery-recordatorios: backlog
+  9-3-historial-recordatorios: backlog
+  epic-9-retrospective: optional
+
+  # === Epic 10: Campos Fase 2 — Prioridad Baja ===
+  epic-10: backlog
+  10-1-edicion-contacto-ids: backlog
+  10-2-canal-preferido-texto-social: backlog
+  10-3-gestion-instancias-recurrentes: backlog
+  epic-10-retrospective: optional
+
+  # === Epic 11: Hardening Pre-producción — Prioridad Media ===
+  epic-11: backlog
+  11-1-persistencia-memorysaver: backlog
+  11-2-concurrent-write-safety: backlog
+  epic-11-retrospective: optional

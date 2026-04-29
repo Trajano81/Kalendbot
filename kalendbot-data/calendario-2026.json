@@ -273,7 +273,7 @@
       "fecha": "2026-04-25",
       "fecha_original": "2026-05-03",
       "nota_fecha": "Movido al 3 de mayo por Semana Santa",
-      "estado": "confirmado",
+      "estado": "pendiente",
       "partner_id": "de-sprinkhaan",
       "contacto_ids": [
         "rocco-van-velzen",
@@ -303,7 +303,7 @@
       "eventbrite": true,
       "condicional": false,
       "texto_social": "👑 Koningsdag in Mexico – Feestavond!\nKoningsdag komt er aan, maar dit jaar is het tevens 75 jaar bevrijdingsdag, dus een dubbel feestje. Vandaar dat we voor de datum 3 mei gekozen hebben (Ook van wege Samena Santa). Ook hebben we dit jaar een andere locatie omdat we iets speciaals wilden doen: Lucerna 42 in Juarez. Een prachtig koloniaans gebouw dat vroeger als club/ discotheek fungeerde. Het thema dit jaar zal dus meer liggen op het volwassenen gedeelte in de vorm van een knalfeest dat tot in de late uurtjes door kan gaan. In de middag zal ook gewoon het kinderprogramma plaatsvinden, verzorgt door de sprinkhaan met onder andere schilderen met van Gogh en een kinder disco. Het beloofd dus een super dag te worden voor jong en oud.\n\nKoop je kaartjes via deze link: Let op er zijn een bepérkt aantal plekken. Zorg dus dat je op tijd bent. Nadere informatie over de kaartjes vind je ook via de link.\n\n📅 3 mei: kinderprogramma 3pm-7pm. Avond feest 7pm-2am\n📍 Lucerna 42, Juarez, CDMX",
-      "ultima_actualizacion": "2026-04-15T14:57:14.746144",
+      "ultima_actualizacion": "2026-04-21T08:27:52.264670",
       "fecha_exacta": true
     },
     {
@@ -366,7 +366,7 @@
       "eventbrite": true,
       "condicional": false,
       "texto_social": "☀️ Buitendag in Cuernavaca\nZin in een gezellige dag in de buitenlucht? Ga met ons mee naar Cuernavaca en geniet van een ontspannen dag met jeu de boules, lekker eten en een verfrissende borrel. Dit is de perfecte gelegenheid om nieuwe mensen te ontmoeten, bij te kletsen en even helemaal tot rust te komen in een mooie omgeving. Schrijf je in en beleef een heerlijke dag! 🥂🎉\n\n📅 Maart\n📍 Cuernavaca",
-      "ultima_actualizacion": "2026-03-24T10:20:53.614071"
+      "ultima_actualizacion": "2026-04-28T14:27:29.747418"
     },
     {
       "id": "popo-abril",
@@ -681,7 +681,7 @@
         "mxn": 0
       },
       "descripcion": "Rondleiding Castillo Chapultepec (NL) met gids",
-      "detalle": null,
+      "detalle": "Na het succes van vorig jaar in Castillo Chapultepec, verzorgd vicky ook dit jaar weer een mooi rondleiding",
       "tier_promocion": "regular",
       "flyer_moment": "-7 dagen",
       "flyer_responsable": "nv",
@@ -694,8 +694,15 @@
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
-      "ultima_actualizacion": "2026-04-15T14:52:16.970959",
-      "fecha_original": "2026-09-15"
+      "ultima_actualizacion": "2026-04-28T14:28:20.335620",
+      "fecha_original": "2026-09-15",
+      "_undo_snapshot": {
+        "timestamp": "2026-04-28T14:28:20.335605",
+        "user": "kmilo-aparicio",
+        "changes": {
+          "detalle": null
+        }
+      }
     },
     {
       "id": "popo-septiembre",

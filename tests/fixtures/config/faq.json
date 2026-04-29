@@ -1,0 +1,15 @@
+{
+  "version": "test",
+  "faqs": [
+    {
+      "id": "total-eventos",
+      "keywords": ["cuantos eventos hay", "cuántos eventos hay", "total de eventos"],
+      "respuesta": "El calendario 2026 tiene 5 eventos de prueba."
+    },
+    {
+      "id": "que-es-nv",
+      "keywords": ["que es nv mexico", "qué es nv mexico"],
+      "respuesta": "NV Mexico es la asociacion neerlandesa en Mexico."
+    }
+  ]
+}

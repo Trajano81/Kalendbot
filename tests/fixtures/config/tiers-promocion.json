@@ -1,0 +1,25 @@
+{
+  "tiers": {
+    "grande": {
+      "nombre": "Grande",
+      "descripcion": "3 oleadas de promocion completa para eventos principales",
+      "oleadas_flyer": 3,
+      "flyer_moments": ["-60 dias", "-30 dias", "-7 dias"],
+      "canales": ["flyer", "reel", "eventbrite", "whatsapp", "rrss"]
+    },
+    "mediano": {
+      "nombre": "Mediano",
+      "descripcion": "1 oleada de promocion para eventos medianos",
+      "oleadas_flyer": 1,
+      "flyer_moments": ["-30 dias"],
+      "canales": ["flyer", "whatsapp", "rrss"]
+    },
+    "regular": {
+      "nombre": "Regular",
+      "descripcion": "Promocion basica via redes sociales",
+      "oleadas_flyer": 1,
+      "flyer_moments": ["-14 dias"],
+      "canales": ["whatsapp", "rrss"]
+    }
+  }
+}
