@@ -78,6 +78,39 @@ def _get_eventos_externos(year: int = 2026) -> str:
     return "\n".join(lines)
 
 
+def _get_instrucciones() -> str:
+    data = _load_json("instrucciones-edicion.json")
+    if not data:
+        return "Archivo de instrucciones no encontrado"
+    lines = ["═══ GUÍA DE EDICIÓN DE EVENTOS ═══\n"]
+
+    # Fields table
+    lines.append("CAMPOS EDITABLES:")
+    lines.append(f"{'Campo':<28} {'Excel':<6} {'Tipo':<8} {'Permiso':<8}")
+    lines.append("─" * 54)
+    for f in data.get("fields", []):
+        lines.append(f"{f['field']:<28} {f['excel_col']:<6} {f['type']:<8} {f['permission']:<8}")
+
+    # Roles
+    lines.append("\nROLES:")
+    for role, desc in data.get("roles", {}).items():
+        lines.append(f"  {role}: {desc}")
+
+    # Usage
+    guide = data.get("usage_guide", {})
+    lines.append(f"\nFLUJO: {guide.get('edit_flow', '')}")
+    lines.append("\nEJEMPLOS:")
+    for ex in guide.get("examples", []):
+        lines.append(f"  • {ex}")
+
+    # Commands
+    lines.append("\nCOMANDOS DISPONIBLES:")
+    for cmd, desc in data.get("agent_activation", {}).get("commands", {}).items():
+        lines.append(f"  {cmd}: {desc}")
+
+    return "\n".join(lines)
+
+
 def _get_compatibilidad() -> str:
     data = _load_json("precedencia.json")
     if not data:
@@ -103,6 +136,7 @@ _HANDLERS = {
     "precedencia": _get_precedencia,
     "restricciones": _get_restricciones,
     "compatibilidad": _get_compatibilidad,
+    "instrucciones": _get_instrucciones,
 }
 
 
@@ -128,11 +162,11 @@ def rules_engine(query: str) -> str:
             lines.append(handler())
         return "\n".join(lines)
 
-    return f"Consulta no reconocida: '{query}'. Opciones: tiers, precedencia, restricciones, eventos_externos, compatibilidad, all"
+    return f"Consulta no reconocida: '{query}'. Opciones: tiers, precedencia, restricciones, eventos_externos, compatibilidad, instrucciones, all"
 
 
 rules_engine_tool = Tool(
     name="RulesEngine",
-    description="Consulta reglas de negocio del calendario de NV Mexico. Input: tipo de regla ('tiers', 'precedencia', 'restricciones', 'eventos_externos', 'compatibilidad', 'all').",
+    description="Consulta reglas de negocio del calendario de NV Mexico. Input: tipo de regla ('tiers', 'precedencia', 'restricciones', 'eventos_externos', 'compatibilidad', 'instrucciones', 'all').",
     func=rules_engine,
 )
