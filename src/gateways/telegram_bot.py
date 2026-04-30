@@ -378,7 +378,13 @@ async def _handle_group_text(update: Update, context: ContextTypes.DEFAULT_TYPE,
     clean_text = _extract_group_text(text, bot_username)
 
     if clean_text is None:
-        return  # No mencionaron al bot, ignorar
+        # Si es un reply a un mensaje del bot, procesarlo como dirigido al bot
+        if (update.message.reply_to_message
+                and update.message.reply_to_message.from_user
+                and update.message.reply_to_message.from_user.id == context.bot.id):
+            clean_text = text
+        else:
+            return  # No mencionaron al bot ni respondieron a su mensaje, ignorar
 
     await _process_group_message(update, context, clean_text)
 
@@ -406,9 +412,19 @@ async def _handle_group_command(update: Update, context: ContextTypes.DEFAULT_TY
     await _process_group_message(update, context, clean)
 
 
+# Verbos reconocidos como inicio de tarea (no necesitan prefijo "cambiar")
+_KNOWN_VERBS = re.compile(
+    r'^(cambiar?|change|ocultar|verbergen|hide|mostrar|tonen|show|'
+    r'estado|status|buscar|search|zoek|deshacer|undo|evento|event|'
+    r'pendientes?|pending|proximos?|próximos?|upcoming|volgende)\b',
+    re.IGNORECASE
+)
+
+
 def _split_multi_task(text: str) -> list[str]:
-    """Divide un mensaje /cambiar con múltiples tareas (separadas por *. o -) en tareas individuales."""
-    if not re.match(r'^(cambiar?|change)\b', text, re.IGNORECASE):
+    """Divide un mensaje con múltiples tareas (separadas por *. o -) en tareas individuales."""
+    # Solo dividir si empieza con un verbo conocido
+    if not _KNOWN_VERBS.match(text):
         return [text]
 
     lines = text.split("\n")
@@ -429,12 +445,13 @@ def _split_multi_task(text: str) -> list[str]:
     if current:
         tasks.append("\n".join(current))
 
-    # Limpiar prefijos de bullet y asegurar contexto "cambiar"
+    # Limpiar prefijos de bullet y asegurar contexto
     cleaned = []
     for task in tasks:
         task = re.sub(r'^\*\.?\s*', '', task).strip()
         task = re.sub(r'^[-–]\s*', '', task).strip()
-        if not re.match(r'^(cambiar?|change)\b', task, re.IGNORECASE):
+        # Solo agregar "cambiar" si no empieza con un verbo conocido
+        if not _KNOWN_VERBS.match(task):
             task = f"cambiar {task}"
         cleaned.append(task)
 
@@ -735,7 +752,9 @@ async def _handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "/pendientes — Listar eventos pendientes\n"
         "/proximos — Listar próximos eventos\n"
         "/evento — Ver detalle de un evento\n"
-        "/deshacer (o /undo) — Revertir último cambio\n\n"
+        "/deshacer (o /undo) — Revertir último cambio\n"
+        "/ocultar — Ocultar evento del export\n"
+        "/mostrar — Mostrar evento en el export\n\n"
         "Exportar:\n"
         "/export_excel — Exportar calendario a Excel\n"
         "/export_jpeg — Exportar calendario como imagen\n"
