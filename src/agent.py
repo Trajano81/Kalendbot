@@ -42,7 +42,7 @@ REGLAS DE COMPORTAMIENTO:
 2. Antes de proponer una fecha, usa ConflictDetector para verificar feriados y conflictos
 3. Al confirmar una fecha, usa DateLocker para bloquearla inmediatamente
 4. Publica updates de estado en el grupo SOLO con GroupNotifier
-5. Si el mensaje incluye "[BATCH:", aplica cambios directamente con batch_confirm (sin batch_preview) y NO uses GroupNotifier. Solo responde con texto descriptivo del resultado
+5. Si el mensaje incluye "[BATCH:", aplica cambios directamente con batch_confirm (sin batch_preview) y NO uses GroupNotifier. Solo responde con texto descriptivo del resultado. Si NO puedes interpretar la instrucción o el campo/evento no existe, responde SOLO con "No entendí: [instrucción original]". NUNCA inventes datos ni adivines campos
 6. Adapta tu tono según el perfil del contacto (formal para Embajada, casual para organizadores)
 6. Si hay conflicto de fechas, ofrece alternativas antes de escalar
 7. NUNCA decidas disputas de fechas por tu cuenta — escala al director
@@ -94,6 +94,20 @@ EDICIÓN DE CAMPOS DE EVENTOS:
 - Para deshacer: CalendarManager(undo_last, event_id=...)
 - Campos admin-only (tier_promocion, flyer_responsable, flyer_oleadas, flyer_moment, delegado): solo admin puede editarlos
 
+ALIAS DE CAMPOS (el usuario puede usar estos nombres en cualquier idioma):
+- activiteit/actividad/nombre → campo: nombre
+- datum/fecha/date → campo: fecha
+- locatie/ubicación/venue → campo: venue_nombre
+- adres/dirección/address → campo: venue_direccion
+- tijd/hora/time → campo: hora
+- prijs/precio/price → campo: precio
+- beschrijving/descripción/description → campo: descripcion
+- detail/detalle → campo: detalle
+- partner → campo: partner_nombre
+- ocultar/verbergen/hide → usar CalendarManager(update_show_export, show_in_export=false)
+- mostrar/tonen/show → usar CalendarManager(update_show_export, show_in_export=true)
+- info/post/flyer/text → campo: detalle (texto informativo del evento)
+
 COMANDOS DISPONIBLES (los mensajes con [COMANDO: /xxx] ya fueron pre-procesados):
 - /cambiar (o /change): Editar campos de un evento. Ej: "/cambiar nombre del Qualifier a Zweden"
 - /estado (o /status): Cambiar estado de un evento. Ej: "/estado Koningsdag confirmado"
@@ -102,6 +116,8 @@ COMANDOS DISPONIBLES (los mensajes con [COMANDO: /xxx] ya fueron pre-procesados)
 - /proximos (o /upcoming, /volgende): Listar próximos eventos
 - /deshacer (o /undo): Revertir último cambio. Ej: "/deshacer cambios en Koningsdag"
 - /evento (o /event): Ver detalle de un evento. Ej: "/evento Koningsdag"
+- /ocultar (o /hide, /verbergen): Ocultar evento del export. Ej: "/ocultar Buitendag"
+- /mostrar (o /show, /tonen): Mostrar evento en el export. Ej: "/mostrar Buitendag"
 Cuando recibas un mensaje con [COMANDO: /xxx], SIGUE LOS PASOS INDICADOS usando las herramientas. NO respondas solo con texto.
 
 Responde siempre en español. Sé conciso y profesional pero amigable."""
@@ -241,6 +257,26 @@ def _preprocess_command(message: str) -> str:
             f"[COMANDO: /evento] El usuario quiere ver el detalle de un evento. Término: \"{body}\". "
             f"PASOS: 1) Usa CalendarManager(search_event) para encontrar el event_id. "
             f"2) Usa CalendarManager(get_event) con el event_id encontrado."
+        )
+
+    # /ocultar — ocultar evento del export
+    if re.match(r'^(ocultar|verbergen|hide)\b', lower):
+        body = re.sub(r'^(ocultar|verbergen|hide)\s*', '', clean, flags=re.IGNORECASE).strip()
+        return (
+            f"{prefix}{batch_prefix}"
+            f"[COMANDO: /ocultar] El usuario quiere ocultar un evento del export. Instrucción: \"{body}\". "
+            f"PASOS: 1) Usa CalendarManager(search_event) para encontrar el evento. "
+            f"2) Usa CalendarManager(update_show_export, event_id=..., show_in_export=false)."
+        )
+
+    # /mostrar — mostrar evento en export
+    if re.match(r'^(mostrar|tonen|show)\b', lower):
+        body = re.sub(r'^(mostrar|tonen|show)\s*', '', clean, flags=re.IGNORECASE).strip()
+        return (
+            f"{prefix}{batch_prefix}"
+            f"[COMANDO: /mostrar] El usuario quiere mostrar un evento en el export. Instrucción: \"{body}\". "
+            f"PASOS: 1) Usa CalendarManager(search_event) para encontrar el evento. "
+            f"2) Usa CalendarManager(update_show_export, event_id=..., show_in_export=true)."
         )
 
     # No es un comando reconocido, devolver original
