@@ -94,6 +94,11 @@ EDICIÓN DE CAMPOS DE EVENTOS:
 - Para deshacer: CalendarManager(undo_last, event_id=...)
 - Campos admin-only (tier_promocion, flyer_responsable, flyer_oleadas, flyer_moment, delegado): solo admin puede editarlos
 
+RESTRICCIÓN DE FECHAS PASADAS:
+- Si un evento ya ocurrió (fecha anterior a hoy) y está confirmado, NO se puede cambiar su fecha. Informa al usuario que los eventos pasados finalizados no pueden cambiar de fecha.
+- Si un evento tiene fecha pasada pero no está confirmado, solo un admin puede cambiar la fecha.
+- Otros campos (nombre, venue, descripcion, etc.) SÍ se pueden editar en eventos pasados sin restricción.
+
 ALIAS DE CAMPOS (el usuario puede usar estos nombres en cualquier idioma):
 - activiteit/actividad/nombre → campo: nombre
 - datum/fecha/date → campo: fecha
@@ -175,21 +180,23 @@ def _preprocess_command(message: str) -> str:
     y los traduce a instrucciones estructuradas para que el LLM use las herramientas correctas.
     Retorna el mensaje enriquecido o el mensaje original si no es un comando.
     """
-    # Limpiar prefijo [Grupo] si existe para analizar el comando
+    # Limpiar prefijos entre corchetes para analizar el comando
     clean = message
     prefix = ""
-    if clean.startswith("[Grupo]"):
-        prefix = "[Grupo] "
-        clean = clean[len("[Grupo]"):].strip()
-
-    # Detectar si hay prefijo BATCH
     batch_prefix = ""
-    if "[BATCH:" in clean:
-        batch_start = clean.index("[BATCH:")
-        batch_end = clean.index("]", batch_start) + 1
-        batch_prefix = clean[batch_start:batch_end] + " "
-        clean = clean[:batch_start].strip() + " " + clean[batch_end:].strip()
-        clean = clean.strip()
+
+    # Extraer todos los prefijos [...]
+    while clean.startswith("["):
+        bracket_end = clean.find("]")
+        if bracket_end == -1:
+            break
+        bracket = clean[:bracket_end + 1]
+        if bracket == "[Grupo]":
+            prefix = "[Grupo] "
+        elif bracket.startswith("[BATCH:"):
+            batch_prefix = bracket + " "
+        # Skip any other bracket prefix (e.g. [NO uses GroupNotifier...])
+        clean = clean[bracket_end + 1:].strip()
 
     lower = clean.lower()
 

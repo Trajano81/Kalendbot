@@ -53,7 +53,8 @@
         }
       ],
       "nota": "Geen instanties juli-december vermeld. Mogelijk pauze tweede semester.",
-      "texto_social": "🍻 Pub Quiz bij Holland Wafels\nDenk jij dat je alles weet over geschiedenis, sport, muziek en nog veel meer? Trommel je vrienden op en doe mee aan onze gezellige Pub Quiz!"
+      "texto_social": "🍻 Pub Quiz bij Holland Wafels\nDenk jij dat je alles weet over geschiedenis, sport, muziek en nog veel meer? Trommel je vrienden op en doe mee aan onze gezellige Pub Quiz!",
+      "show_in_export": true
     },
     {
       "id": "vrijmibo-recurrente",
@@ -270,8 +271,8 @@
       "id": "koningsdag",
       "nombre": "Koningsdag",
       "partner_nombre": "De Sprinkhaan/ Ambassade",
-      "fecha": "2026-04-25",
-      "fecha_original": "2026-05-03",
+      "fecha": "2026-05-24",
+      "fecha_original": "2026-04-25",
       "nota_fecha": "Movido al 3 de mayo por Semana Santa",
       "estado": "pendiente",
       "partner_id": "de-sprinkhaan",
@@ -280,7 +281,7 @@
         "mirjam-van-vliet"
       ],
       "venue_id": null,
-      "venue_nombre": "Lucerna 42, Juárez, CDMX",
+      "venue_nombre": "15 augustus",
       "hora": "15:00",
       "hora_detalle": "Kinderprogramma 3pm-7pm. Avondfeest 7pm-2am",
       "precio": "100k/200volw",
@@ -303,8 +304,17 @@
       "eventbrite": true,
       "condicional": false,
       "texto_social": "👑 Koningsdag in Mexico – Feestavond!\nKoningsdag komt er aan, maar dit jaar is het tevens 75 jaar bevrijdingsdag, dus een dubbel feestje. Vandaar dat we voor de datum 3 mei gekozen hebben (Ook van wege Samena Santa). Ook hebben we dit jaar een andere locatie omdat we iets speciaals wilden doen: Lucerna 42 in Juarez. Een prachtig koloniaans gebouw dat vroeger als club/ discotheek fungeerde. Het thema dit jaar zal dus meer liggen op het volwassenen gedeelte in de vorm van een knalfeest dat tot in de late uurtjes door kan gaan. In de middag zal ook gewoon het kinderprogramma plaatsvinden, verzorgt door de sprinkhaan met onder andere schilderen met van Gogh en een kinder disco. Het beloofd dus een super dag te worden voor jong en oud.\n\nKoop je kaartjes via deze link: Let op er zijn een bepérkt aantal plekken. Zorg dus dat je op tijd bent. Nadere informatie over de kaartjes vind je ook via de link.\n\n📅 3 mei: kinderprogramma 3pm-7pm. Avond feest 7pm-2am\n📍 Lucerna 42, Juarez, CDMX",
-      "ultima_actualizacion": "2026-04-21T08:27:52.264670",
-      "fecha_exacta": true
+      "ultima_actualizacion": "2026-05-05T09:38:12.070153",
+      "fecha_exacta": true,
+      "_undo_snapshot": {
+        "timestamp": "2026-05-04T17:21:19.914169",
+        "user": "kmilo-aparicio",
+        "changes": {
+          "fecha": "2026-04-25"
+        }
+      },
+      "venue_direccion": "nvt",
+      "show_in_export": true
     },
     {
       "id": "taalkamp-kinderen",
@@ -491,7 +501,7 @@
     {
       "id": "vrijwilligers-borrel",
       "nombre": "Vrijwilligers Borrel",
-      "fecha": "2026-06-01",
+      "fecha": "2026-06-11",
       "fecha_exacta": false,
       "estado": "pendiente",
       "partner_id": "holland-wafels",
@@ -510,7 +520,17 @@
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
-      "texto_social": "🥂 Vrijwilligersborrel NV Mexico\nVrijwilligers zijn de drijvende kracht achter de NV Mexico, en daarom willen we hen bedanken! Wil je hier bij zijn. Meld je dan aan als vrijwilligerdoor hier te reageren. We nodigen je dan uit voor deze speciale borrel. Een ontspannen avond met leuke gesprekken, hapjes en drankjes. Een mooie kans om elkaar beter te leren kennen en samen te proosten op een succesvolle samenwerking! 🎉\n\n📅 Juni\n📍 Holland Wafels"
+      "texto_social": "🥂 Vrijwilligersborrel NV Mexico\nVrijwilligers zijn de drijvende kracht achter de NV Mexico, en daarom willen we hen bedanken! Wil je hier bij zijn. Meld je dan aan als vrijwilligerdoor hier te reageren. We nodigen je dan uit voor deze speciale borrel. Een ontspannen avond met leuke gesprekken, hapjes en drankjes. Een mooie kans om elkaar beter te leren kennen en samen te proosten op een succesvolle samenwerking! 🎉\n\n📅 Juni\n📍 Holland Wafels",
+      "_undo_snapshot": {
+        "timestamp": "2026-04-28T23:06:01.616747",
+        "user": "kmilo-aparicio",
+        "changes": {
+          "fecha": "2026-06-01"
+        }
+      },
+      "fecha_original": "2026-06-01",
+      "ultima_actualizacion": "2026-05-05T13:47:19.195342",
+      "show_in_export": false
     },
     {
       "id": "wk-nederland-vs-japan",
@@ -543,7 +563,7 @@
     },
     {
       "id": "wk-nederland-vs-qualifier",
-      "nombre": "WK Nederland vs Qualifier",
+      "nombre": "WK Nederland vs Sweden",
       "fecha": "2026-06-20",
       "estado": "confirmado",
       "partner_id": "holland-wafels",
@@ -568,7 +588,15 @@
       ],
       "reel_post": true,
       "eventbrite": false,
-      "condicional": false
+      "condicional": false,
+      "_undo_snapshot": {
+        "timestamp": "2026-05-04T17:18:38.152697",
+        "user": "kmilo-aparicio",
+        "changes": {
+          "nombre": "WK Nederland vs Qualifier"
+        }
+      },
+      "ultima_actualizacion": "2026-05-04T17:18:38.152733"
     },
     {
       "id": "wk-tunesie-vs-nederland",
@@ -694,13 +722,13 @@
       "reel_post": false,
       "eventbrite": false,
       "condicional": false,
-      "ultima_actualizacion": "2026-04-28T14:28:20.335620",
+      "ultima_actualizacion": "2026-04-28T23:06:31.868601",
       "fecha_original": "2026-09-15",
       "_undo_snapshot": {
-        "timestamp": "2026-04-28T14:28:20.335605",
+        "timestamp": "2026-04-28T23:06:31.868576",
         "user": "kmilo-aparicio",
         "changes": {
-          "detalle": null
+          "detalle": "Na het succes van vorig jaar in Castillo Chapultepec, verzorgd vicky ook dit jaar weer een mooi rondleiding"
         }
       }
     },

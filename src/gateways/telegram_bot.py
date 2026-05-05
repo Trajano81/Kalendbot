@@ -9,10 +9,11 @@ import uuid
 import logging
 from datetime import datetime, time, date
 from zoneinfo import ZoneInfo
-from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
 from telegram.ext import Application, MessageHandler, CommandHandler, CallbackQueryHandler, ChatMemberHandler, filters, ContextTypes
 
 from src.agent import handle_message
+from src.tools.calendar_manager import calendar_manager
 from src.gateways.contacts import (
     identify_by_phone,
     identify_by_telegram_id,
@@ -435,8 +436,8 @@ def _split_multi_task(text: str) -> list[str]:
         stripped = line.strip()
         if not stripped:
             continue
-        # Nueva tarea si empieza con *. o - (bullet point)
-        if re.match(r'^(\*\.?\s+|[-–]\s+)', stripped) and current:
+        # Nueva tarea si empieza con bullet: *. / * / - / – / • / 1. / 2. etc.
+        if re.match(r'^(\*\.?\s+|[-–•]\s+|\d+[.)]\s+)', stripped) and current:
             tasks.append("\n".join(current))
             current = [stripped]
         else:
@@ -448,12 +449,15 @@ def _split_multi_task(text: str) -> list[str]:
     # Limpiar prefijos de bullet y asegurar contexto
     cleaned = []
     for task in tasks:
-        task = re.sub(r'^\*\.?\s*', '', task).strip()
-        task = re.sub(r'^[-–]\s*', '', task).strip()
+        task = re.sub(r'^(\*\.?\s*|[-–•]\s*|\d+[.)]\s*)', '', task).strip()
         # Solo agregar "cambiar" si no empieza con un verbo conocido
         if not _KNOWN_VERBS.match(task):
             task = f"cambiar {task}"
         cleaned.append(task)
+
+    # Drop header-only first task (e.g. bare "cambiar" before bullets)
+    if len(cleaned) > 2 and _KNOWN_VERBS.match(cleaned[0].strip()) and not _KNOWN_VERBS.sub('', cleaned[0].strip()):
+        cleaned = cleaned[1:]
 
     return cleaned if len(cleaned) > 1 else [text]
 
@@ -496,7 +500,7 @@ async def _process_group_message(update: Update, context: ContextTypes.DEFAULT_T
         )
         logger.info(f"Grupo multi-respuesta a {contact_id}: {len(tasks)} tareas procesadas")
     else:
-        message = f"[Grupo] {text}"
+        message = f"[Grupo] [NO uses GroupNotifier, solo responde con texto. Si es un cambio, aplica directo con batch_confirm sin batch_preview] {text}"
         response = handle_message(phone=str(telegram_id), message=message, contact_id=contact_id)
         response = strip_markdown(response)
 
@@ -741,6 +745,138 @@ async def _handle_export_jpeg(update: Update, context: ContextTypes.DEFAULT_TYPE
         await update.message.reply_text(f"Error generando la imagen: {e}")
 
 
+async def _handle_export_jpeg_codes(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Comando /export_jpeg_codes — genera JPEG compacto con códigos de actividad."""
+    telegram_id = update.message.from_user.id
+    contact_id = identify_by_telegram_id(telegram_id)
+
+    if not contact_id:
+        await update.message.reply_text("No estás identificado. Usa /start primero.")
+        return
+
+    try:
+        with open(os.path.join(DATA_DIR, "contactos", f"{contact_id}.json"), "r", encoding="utf-8") as f:
+            contact_data = json.load(f)
+        rol = contact_data.get("rol_kalendbot", "readonly")
+    except (FileNotFoundError, json.JSONDecodeError):
+        rol = "readonly"
+
+    if rol == "readonly":
+        await update.message.reply_text("No tienes permisos para exportar el calendario.")
+        return
+
+    await update.message.reply_text("Generando imagen de códigos...")
+
+    try:
+        from src.tools.calendar_exporter import export_calendar_as_jpeg_codes
+        output_path = export_calendar_as_jpeg_codes(year=2026)
+
+        if output_path.startswith("Error") or output_path.startswith("No hay"):
+            await update.message.reply_text(f"Error: {output_path}")
+            return
+
+        with open(output_path, "rb") as photo:
+            await update.message.reply_photo(
+                photo=photo,
+                caption="Códigos de actividades — NV Mexico 2026",
+            )
+    except Exception as e:
+        logger.error(f"Error exportando JPEG codes: {e}")
+        await update.message.reply_text(f"Error generando la imagen: {e}")
+
+
+async def _handle_hide(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Comando /ocultar — ocultar evento del export sin usar LLM."""
+    await _toggle_show_export(update, show=False)
+
+
+async def _handle_show(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Comando /mostrar — mostrar evento en el export sin usar LLM."""
+    await _toggle_show_export(update, show=True)
+
+
+def _build_event_list() -> list[dict]:
+    """Returns a numbered list of all events with id, name, date, and show_in_export status."""
+    result = calendar_manager(action="list_all")
+    events = []
+    for line in result.strip().split("\n"):
+        if not line.strip():
+            continue
+        # Parse "id: nombre — fecha [estado]" or "[RECURRENTE] id: nombre — ..."
+        match = re.match(r'^(?:\[.*?\]\s*)?(\S+):\s*(.+?)\s*—\s*(.+)$', line.strip())
+        if match:
+            events.append({"id": match.group(1), "nombre": match.group(2), "extra": match.group(3)})
+    return events
+
+
+async def _toggle_show_export(update: Update, show: bool) -> None:
+    """Busca evento por nombre o numero y cambia show_in_export directamente."""
+    user = update.message.from_user
+    contact_id = identify_by_telegram_id(user.id)
+    if not contact_id:
+        await update.message.reply_text("No estas identificado. Usa /start primero.")
+        return
+
+    text = update.message.text.strip()
+    # Extract search query: strip /command[@botname]
+    query = re.sub(r'^/\S*\s*', '', text).strip()
+    action = "ocultar" if not show else "mostrar"
+
+    events = _build_event_list()
+
+    # No args: show numbered list
+    if not query:
+        lines = []
+        for i, evt in enumerate(events, 1):
+            lines.append(f"{i}. {evt['nombre']} ({evt['id']})")
+        await update.message.reply_text(
+            f"Eventos disponibles:\n\n" + "\n".join(lines) + f"\n\nUso: /{action} <numero o nombre>",
+            reply_to_message_id=update.message.message_id,
+        )
+        return
+
+    # If query is a number, use it as index
+    if query.isdigit():
+        idx = int(query) - 1
+        if 0 <= idx < len(events):
+            event_id = events[idx]["id"]
+            action_word = "Oculto" if not show else "Visible"
+            result = calendar_manager(action="update_show_export", event_id=event_id, show_in_export=show)
+            await update.message.reply_text(
+                f"{action_word}: {result}",
+                reply_to_message_id=update.message.message_id,
+            )
+            logger.info(f"{action} evento #{query} por {contact_id}: {result}")
+            return
+        else:
+            await update.message.reply_text(f"Numero {query} fuera de rango (1-{len(events)}).")
+            return
+
+    # Search by name
+    search_result = calendar_manager(action="search_event", event_id=query)
+    if "No se encontraron" in search_result:
+        await update.message.reply_text(f"No encontre eventos con '{query}'.")
+        return
+
+    lines = [l.strip() for l in search_result.strip().split("\n") if l.strip()]
+    if len(lines) > 1:
+        await update.message.reply_text(
+            f"Encontre {len(lines)} eventos. Se mas especifico:\n\n" + search_result,
+            reply_to_message_id=update.message.message_id,
+        )
+        return
+
+    # Single match
+    event_id = lines[0].split(":")[0].strip()
+    action_word = "Oculto" if not show else "Visible"
+    result = calendar_manager(action="update_show_export", event_id=event_id, show_in_export=show)
+    await update.message.reply_text(
+        f"{action_word}: {result}",
+        reply_to_message_id=update.message.message_id,
+    )
+    logger.info(f"{action} evento por {contact_id}: {result}")
+
+
 async def _handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Comando /help — lista comandos disponibles."""
     help_text = (
@@ -758,9 +894,10 @@ async def _handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "Exportar:\n"
         "/export_excel — Exportar calendario a Excel\n"
         "/export_jpeg — Exportar calendario como imagen\n"
+        "/export_jpeg_codes — Ver codigos de actividades\n"
         "/export_instructions — Ver campos editables y permisos\n\n"
         "/help — Mostrar esta ayuda\n\n"
-        "En grupo, tambien puedes mencionarme con @KalendBot seguido de tu pregunta.\n\n"
+        "En grupo, tambien puedes mencionarme seguido de tu pregunta.\n\n"
         "Tip: Usa bullet points (*.) para enviar multiples cambios en un solo mensaje."
     )
     await update.message.reply_text(help_text)
@@ -777,6 +914,58 @@ async def _handle_export_instructions(update: Update, context: ContextTypes.DEFA
         await update.message.reply_text(f"Error generando instrucciones: {e}")
 
 
+async def _post_init(application: Application) -> None:
+    """Register bot commands for the Telegram menu popup."""
+    commands = [
+        BotCommand("cambiar", "Editar campos de eventos"),
+        BotCommand("change", "Edit event fields (alias)"),
+        BotCommand("buscar", "Buscar eventos por nombre"),
+        BotCommand("estado", "Cambiar estado de un evento"),
+        BotCommand("pendientes", "Listar eventos pendientes"),
+        BotCommand("proximos", "Ver proximos eventos"),
+        BotCommand("ocultar", "Ocultar evento del export"),
+        BotCommand("mostrar", "Mostrar evento en el export"),
+        BotCommand("export_excel", "Exportar calendario a Excel"),
+        BotCommand("export_jpeg", "Exportar calendario como imagen"),
+        BotCommand("export_jpeg_codes", "Ver codigos de actividades"),
+        BotCommand("help", "Mostrar comandos disponibles"),
+    ]
+    await application.bot.set_my_commands(commands)
+    logger.info("Comandos del bot registrados en Telegram")
+
+
+async def _handle_dm_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Forward unrecognized /commands in DMs to the agent."""
+    if not update.message or not update.message.text:
+        return
+
+    text = update.message.text.strip()
+    user = update.message.from_user
+
+    contact_id = identify_by_telegram_id(user.id)
+    if not contact_id:
+        keyboard = [[KeyboardButton("Compartir mi numero", request_contact=True)]]
+        await update.message.reply_text(
+            "Para poder ayudarte, primero necesito identificarte.",
+            reply_markup=ReplyKeyboardMarkup(keyboard, one_time_keyboard=True, resize_keyboard=True),
+        )
+        return
+
+    # Strip /command prefix and prepend command name as text
+    cmd_match = re.match(r'^/(\w+)(@\S+)?\s*(.*)', text, re.DOTALL)
+    if cmd_match:
+        cmd = cmd_match.group(1)
+        rest = cmd_match.group(3).strip()
+        clean = f"{cmd} {rest}".strip()
+    else:
+        clean = text
+
+    logger.info(f"DM comando de {contact_id}: {clean[:80]}")
+    response = handle_message(phone=str(update.message.chat_id), message=clean, contact_id=contact_id)
+    response = strip_markdown(response)
+    await update.message.reply_text(response)
+
+
 def start_telegram_bot() -> None:
     """Inicia el bot de Telegram con polling."""
     if not TELEGRAM_BOT_TOKEN:
@@ -787,18 +976,23 @@ def start_telegram_bot() -> None:
     logger.info("Iniciando KalendBot en Telegram...")
     print("KalendBot Telegram iniciado. Ctrl+C para detener.")
 
-    app = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+    app = Application.builder().token(TELEGRAM_BOT_TOKEN).post_init(_post_init).build()
     app.add_handler(ChatMemberHandler(_handle_new_group, ChatMemberHandler.MY_CHAT_MEMBER))
     app.add_handler(CommandHandler("start", _start_command))
     app.add_handler(CommandHandler("export_excel", _handle_export_excel))
     app.add_handler(CommandHandler("export_jpeg", _handle_export_jpeg))
+    app.add_handler(CommandHandler("export_jpeg_codes", _handle_export_jpeg_codes))
     app.add_handler(CommandHandler("export_instructions", _handle_export_instructions))
     app.add_handler(CommandHandler("help", _handle_help))
+    app.add_handler(CommandHandler(["ocultar", "hide"], _handle_hide))
+    app.add_handler(CommandHandler(["mostrar", "show"], _handle_show))
     app.add_handler(CallbackQueryHandler(_handle_approval))
     app.add_handler(MessageHandler(filters.CONTACT, _handle_contact))
     # Grupo: capturar /comandos como texto libre para el agente
     group_filter = filters.ChatType.GROUPS & filters.COMMAND
     app.add_handler(MessageHandler(group_filter, _handle_group_command))
+    # DM: capturar /comandos no explícitos (cambiar, buscar, etc.)
+    app.add_handler(MessageHandler(filters.ChatType.PRIVATE & filters.COMMAND, _handle_dm_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, _handle_text))
 
     # Programar recordatorios diarios

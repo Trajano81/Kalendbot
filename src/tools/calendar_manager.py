@@ -153,6 +153,48 @@ def _check_field_permission(field_name: str, role: str, contact_id: str, event: 
     return None
 
 
+def _check_past_date_change(target: dict, parsed_changes: list[tuple[str, str]], role: str) -> str | None:
+    """Block date changes on past events for non-admin roles."""
+    if role in ("admin", "tester"):
+        return None
+
+    date_fields = {"fecha", "fecha_inicio", "fecha_fin"}
+    date_changes = [(f, v) for f, v in parsed_changes if f in date_fields]
+    if not date_changes:
+        return None
+
+    today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # Check 1: Is the event's current date in the past?
+    event_date = target.get("fecha") or target.get("fecha_inicio")
+    if event_date:
+        try:
+            event_dt = datetime.strptime(event_date, "%Y-%m-%d")
+            if event_dt < today:
+                return (
+                    "No se puede cambiar la fecha de un evento pasado. "
+                    f"El evento tiene fecha {event_date} que ya ocurrió. "
+                    "Contacta al administrador para autorización."
+                )
+        except ValueError:
+            pass
+
+    # Check 2: Is the new date in the past?
+    for field, new_date in date_changes:
+        try:
+            new_dt = datetime.strptime(new_date, "%Y-%m-%d")
+            if new_dt < today:
+                return (
+                    f"No se puede asignar una fecha pasada ({new_date}) a un evento. "
+                    f"Hoy es {today.strftime('%Y-%m-%d')}. "
+                    "Contacta al administrador para autorización."
+                )
+        except ValueError:
+            pass
+
+    return None
+
+
 def _build_compact_diagnostics(changed_fields: list[str]) -> str:
     """Build aggregated impact one-liner from changed fields."""
     categories = set()
@@ -394,6 +436,11 @@ def calendar_manager(
         if is_instance and target is None:
             return f"Instancia con fecha '{instance_fecha}' no encontrada en '{event_id}'"
 
+        # Block date changes on past finalized events
+        past_err = _check_past_date_change(target, parsed_changes, role or "readonly")
+        if past_err:
+            return past_err
+
         errors = []
         diffs = []
         changed_fields = []
@@ -453,6 +500,11 @@ def calendar_manager(
             return f"Evento '{event_id}' no encontrado"
         if is_instance and target is None:
             return f"Instancia con fecha '{instance_fecha}' no encontrada en '{event_id}'"
+
+        # Block date changes on past finalized events
+        past_err = _check_past_date_change(target, parsed_changes, role or "readonly")
+        if past_err:
+            return past_err
 
         # Validate all changes first
         to_apply = []

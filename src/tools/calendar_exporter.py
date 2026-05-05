@@ -499,6 +499,7 @@ JPEG_TITLES = {
 
 # Column indices in _event_to_row() output to show in JPEG
 JPEG_COL_INDICES = [0, 1, 2, 3]  # Datum, Activiteit, Partner, Locatie
+JPEG_CODES_COL_INDICES = [4, 0, 1, 2, 3]  # Code, Datum, Activiteit, Partner, Locatie
 
 
 def _img_to_data_uri(path: str) -> str:
@@ -654,6 +655,61 @@ def export_calendar_as_jpeg(
         img = img.crop((0, 0, img.width, bbox[3] + 8))
 
     output_path = os.path.join(DATA_DIR, f"NV_{year}_Jaarplanning_{lang}.jpeg")
+    img.convert("RGB").save(output_path, "JPEG", quality=92)
+
+    try:
+        os.remove(png_path)
+    except OSError:
+        pass
+    return output_path
+
+
+def export_calendar_as_jpeg_codes(
+    year: int = 2026,
+    filter_status: Optional[str] = None,
+    lang: str = "dut",
+) -> str:
+    """Genera JPEG del calendario con columna de códigos de actividad."""
+    result = _prepare_calendar_data(year, filter_status, lang=lang)
+    if isinstance(result, str):
+        return result
+    all_events, rec_events, t = result
+
+    rows = []
+    for idx, rec in enumerate(rec_events[:2]):
+        row = _event_to_row(rec, lang, code=f"R{idx+1}")
+        row[0] = rec.get("regla", "")
+        rows.append([str(row[i]) if row[i] is not None else "" for i in JPEG_CODES_COL_INDICES])
+    for idx, evento in enumerate(all_events):
+        row = _event_to_row(evento, lang, code=str(idx + 1))
+        rows.append([str(row[i]) if row[i] is not None else "" for i in JPEG_CODES_COL_INDICES])
+
+    headers = [t["headers"][i] for i in JPEG_CODES_COL_INDICES]
+    title = JPEG_TITLES.get(lang, JPEG_TITLES["dut"]).format(year=year) + " — Codes"
+    html = _build_calendar_html(rows, headers, title)
+
+    viewport_h = 80 + 22 + len(rows) * 20 + 130 + 80
+
+    from html2image import Html2Image
+    from PIL import Image, ImageChops
+
+    hti = Html2Image(
+        output_path=DATA_DIR,
+        size=(960, viewport_h),
+        custom_flags=["--no-sandbox", "--disable-gpu", "--hide-scrollbars"],
+    )
+    temp_png = f"_temp_{year}_{lang}_codes.png"
+    hti.screenshot(html_str=html, save_as=temp_png)
+
+    png_path = os.path.join(DATA_DIR, temp_png)
+    img = Image.open(png_path)
+    bg = Image.new(img.mode, img.size, (255, 255, 255))
+    diff = ImageChops.difference(img, bg)
+    bbox = diff.getbbox()
+    if bbox:
+        img = img.crop((0, 0, img.width, bbox[3] + 8))
+
+    output_path = os.path.join(DATA_DIR, f"NV_{year}_Codes_{lang}.jpeg")
     img.convert("RGB").save(output_path, "JPEG", quality=92)
 
     try:
