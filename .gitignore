@@ -1,0 +1,30 @@
+# Environment
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+
+# IDE
+.cursor/
+.agent/
+.vscode/
+
+
+# Data (conversation memories are runtime state)
+kalendbot-data/memories/
+
+# Excel exports (generated files)
+kalendbot-data/*.xlsx
+kalendbot-data/NV_*.xlsx
+
+# WAHA sessions (WhatsApp browser data)
+waha-sessions/
+
+# OS
+.DS_Store
+Thumbs.db

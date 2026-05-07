@@ -1,0 +1,892 @@
+{
+  "año": 2026,
+  "version": "1.0",
+  "fuente": "NV_2026_Jaarkalender_V2.0.xlsx",
+  "eventos_recurrentes": [
+    {
+      "id": "pub-quiz-recurrente",
+      "nombre": "Maandelijkse Pub Quiz",
+      "nombre_corto": "Pub Quiz",
+      "partner_nombre": "Christiaan Kemper",
+      "regla": "1e donderdag vd mnd",
+      "partner_id": "holland-wafels",
+      "contacto_ids": [
+        "christian-kemper"
+      ],
+      "venue_id": "holland-wafels",
+      "hora": "19:00",
+      "precio": {
+        "mxn": 75
+      },
+      "descripcion": "Social / Pub Quiz",
+      "detalle": "Incl: Organisatie van de quiz",
+      "tier_promocion": "regular",
+      "flyer_responsable": "proveedor",
+      "flyer_responsable_nombre": "Christian Kemper",
+      "delegado": true,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "instancias_2026": [
+        {
+          "fecha": "2026-02-05",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-03-05",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-04-05",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-05-07",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-06-04",
+          "estado": "pendiente"
+        }
+      ],
+      "nota": "Geen instanties juli-december vermeld. Mogelijk pauze tweede semester.",
+      "texto_social": "🍻 Pub Quiz bij Holland Wafels\nDenk jij dat je alles weet over geschiedenis, sport, muziek en nog veel meer? Trommel je vrienden op en doe mee aan onze gezellige Pub Quiz!",
+      "show_in_export": true
+    },
+    {
+      "id": "vrijmibo-recurrente",
+      "nombre": "Maandelijkse Vrijmibo",
+      "partner_nombre": "Andre Major",
+      "regla": "Laatste vrijdag vd mnd",
+      "partner_id": null,
+      "contacto_ids": [
+        "andre-major"
+      ],
+      "venue_id": null,
+      "venue_nombre": "Garrabo, Coyoacán",
+      "venue_direccion": "Parq Centenario 15, Coyoacán",
+      "hora": "16:00",
+      "precio": {
+        "mxn": 0
+      },
+      "descripcion": "Vrijmibo (after-work)",
+      "detalle": "Gezelligheid",
+      "tier_promocion": "regular",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 3,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "instancias_2026": [
+        {
+          "fecha": "2026-01-30",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-02-27",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-03-27",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-04-24",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-05-29",
+          "estado": "pendiente"
+        },
+        {
+          "fecha": "2026-06-26",
+          "estado": "pendiente"
+        }
+      ],
+      "nota": "Geen individuele data vermeld in Excel.",
+      "expandir_en_export": false
+    }
+  ],
+  "eventos": [
+    {
+      "id": "nieuwjaarsreceptie-2026",
+      "nombre": "Nieuwjaarsreceptie (incl ALV)",
+      "fecha": "2026-01-22",
+      "estado": "confirmado",
+      "partner_id": "embajada-nl",
+      "contacto_ids": [
+        "rocco-van-velzen"
+      ],
+      "venue_id": "embajada-nl",
+      "hora": "19:00",
+      "precio": {
+        "mxn": 200
+      },
+      "descripcion": "Nieuwjaars Receptie",
+      "detalle": "Incl: borrel hap/drankjes. Eventbrite link toevoegen",
+      "tier_promocion": "mediano",
+      "flyer_moment": "-17 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
+      "reel_post": true,
+      "eventbrite": true,
+      "condicional": false,
+      "ultima_actualizacion": "2026-03-20T10:07:16.362759"
+    },
+    {
+      "id": "oproep-bestuursleden",
+      "nombre": "Oproep voor nieuwe bestuursleden",
+      "fecha": "2026-05-01",
+      "fecha_original": "2026-02-01",
+      "fecha_exacta": true,
+      "estado": "confirmado",
+      "show_in_export": false,
+      "partner_id": "nv-mexico",
+      "contacto_ids": [
+        "rocco-van-velzen"
+      ],
+      "venue_id": null,
+      "hora": null,
+      "precio": null,
+      "descripcion": "Geen activiteit, alleen een flyer",
+      "detalle": "Alleen kennisgeving, geen fysiek evenement",
+      "tier_promocion": "publicacion",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false,
+      "ultima_actualizacion": "2026-03-24T11:35:11.653534"
+    },
+    {
+      "id": "elfstedentocht",
+      "nombre": "Cultuurdag Elfstedentocht",
+      "fecha": "2026-01-24",
+      "estado": "confirmado",
+      "partner_id": "de-sprinkhaan",
+      "contacto_ids": [
+        "mirjam-van-vliet"
+      ],
+      "venue_id": null,
+      "venue_nombre": "Centro Comercial Parque Vía Vallejo",
+      "hora": null,
+      "precio": null,
+      "descripcion": "Cultuurdag Elfstedentocht",
+      "detalle": null,
+      "tier_promocion": "delegado",
+      "flyer_responsable": "proveedor",
+      "flyer_responsable_nombre": "Mirjam",
+      "delegado": true,
+      "canales": [],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false,
+      "ultima_actualizacion": "2026-03-20T10:21:53.031184"
+    },
+    {
+      "id": "klimtocht-pico-de-aguila",
+      "nombre": "Klimtocht: Pico de Águila",
+      "fecha": "2026-03-14",
+      "estado": "confirmado",
+      "partner_id": "rene-wieben",
+      "contacto_ids": [
+        "rene-wieben"
+      ],
+      "venue_id": null,
+      "venue_nombre": "Ajusco",
+      "venue_direccion": "Verzamelplek wordt bekend gemaakt via Ajusco WhatsApp groep",
+      "hora": "09:00",
+      "precio": {
+        "mxn": 0,
+        "nota": "Excl: entree park 50 MXN"
+      },
+      "descripcion": "Klimtocht",
+      "detalle": "Excl: entree park 50 mxn",
+      "tier_promocion": "mediano",
+      "flyer_moment": "-17 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false,
+      "ultima_actualizacion": "2026-03-20T10:16:04.725329"
+    },
+    {
+      "id": "groot-nederlands-dictee",
+      "nombre": "Groot Nederlands Dictee",
+      "fecha": "2026-03-26",
+      "fecha_exacta": true,
+      "estado": "confirmado",
+      "partner_id": "holland-wafels",
+      "contacto_ids": [
+        "koen-houwen"
+      ],
+      "venue_id": "holland-wafels",
+      "hora": null,
+      "precio": {
+        "mxn": 0
+      },
+      "descripcion": "Groot Nederlands Dictee. Wie beheerst het beste de Nederlandse taal",
+      "detalle": "Ned dictee voor Nederlanders en Belgen",
+      "tier_promocion": "regular",
+      "flyer_moment": "-7 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false,
+      "texto_social": "📖 Groot Nederlands Dictee\nBen jij een echte taalexpert? Test je spelling en grammatica tijdens het Groot Nederlands Dictee! Een avond vol uitdaging en plezier, waar je kunt bewijzen hoe goed je de Nederlandse taal beheerst. Of je nu meedoet voor de winst of gewoon voor de gezelligheid, het wordt een leuke en leerzame ervaring. Doe mee en laat zien dat jij de taalbaas bent! ✍️🏆\n\n📅 Maart\n📍 Holland Wafels",
+      "ultima_actualizacion": "2026-03-20T10:21:53.031184"
+    },
+    {
+      "id": "koningsdag",
+      "nombre": "Koningsdag",
+      "partner_nombre": "De Sprinkhaan/ Ambassade",
+      "fecha": "2026-05-24",
+      "fecha_original": "2026-04-25",
+      "nota_fecha": "Movido al 3 de mayo por Semana Santa",
+      "estado": "pendiente",
+      "partner_id": "de-sprinkhaan",
+      "contacto_ids": [
+        "rocco-van-velzen",
+        "mirjam-van-vliet"
+      ],
+      "venue_id": null,
+      "venue_nombre": "15 augustus",
+      "hora": "15:00",
+      "hora_detalle": "Kinderprogramma 3pm-7pm. Avondfeest 7pm-2am",
+      "precio": "100k/200volw",
+      "descripcion": "Koningsdag",
+      "detalle": "Incl: vrijmarkt, spelletjes, live muziek, wijnproeverij, DJ, etc",
+      "tier_promocion": "grande",
+      "flyer_moment": "-60,-30,-7 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 3,
+      "delegado": false,
+      "canales": [
+        "flyer",
+        "reel",
+        "eventbrite",
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
+      "reel_post": true,
+      "eventbrite": true,
+      "condicional": false,
+      "texto_social": "👑 Koningsdag in Mexico – Feestavond!\nKoningsdag komt er aan, maar dit jaar is het tevens 75 jaar bevrijdingsdag, dus een dubbel feestje. Vandaar dat we voor de datum 3 mei gekozen hebben (Ook van wege Samena Santa). Ook hebben we dit jaar een andere locatie omdat we iets speciaals wilden doen: Lucerna 42 in Juarez. Een prachtig koloniaans gebouw dat vroeger als club/ discotheek fungeerde. Het thema dit jaar zal dus meer liggen op het volwassenen gedeelte in de vorm van een knalfeest dat tot in de late uurtjes door kan gaan. In de middag zal ook gewoon het kinderprogramma plaatsvinden, verzorgt door de sprinkhaan met onder andere schilderen met van Gogh en een kinder disco. Het beloofd dus een super dag te worden voor jong en oud.\n\nKoop je kaartjes via deze link: Let op er zijn een bepérkt aantal plekken. Zorg dus dat je op tijd bent. Nadere informatie over de kaartjes vind je ook via de link.\n\n📅 3 mei: kinderprogramma 3pm-7pm. Avond feest 7pm-2am\n📍 Lucerna 42, Juarez, CDMX",
+      "ultima_actualizacion": "2026-05-05T09:38:12.070153",
+      "fecha_exacta": true,
+      "_undo_snapshot": {
+        "timestamp": "2026-05-04T17:21:19.914169",
+        "user": "kmilo-aparicio",
+        "changes": {
+          "fecha": "2026-04-25"
+        }
+      },
+      "venue_direccion": "nvt",
+      "show_in_export": true
+    },
+    {
+      "id": "taalkamp-kinderen",
+      "nombre": "Taalkamp voor kinderen",
+      "fecha_inicio": "2026-04-30",
+      "fecha_fin": "2026-05-03",
+      "estado": "confirmado",
+      "partner_id": "de-sprinkhaan",
+      "contacto_ids": [
+        "mirjam-van-vliet"
+      ],
+      "venue_id": null,
+      "venue_nombre": "Quintana Roo",
+      "hora": null,
+      "precio": null,
+      "descripcion": "Taalkamp voor kinderen",
+      "detalle": null,
+      "tier_promocion": "delegado",
+      "flyer_responsable": "proveedor",
+      "flyer_responsable_nombre": "Mirjam",
+      "delegado": true,
+      "canales": [],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false
+    },
+    {
+      "id": "buitendag-cuernavaca",
+      "nombre": "Buitendag",
+      "fecha": "2026-04-03",
+      "fecha_original": "2026-04-01",
+      "fecha_exacta": true,
+      "nota_fecha": "Abril/Mei según Excel",
+      "estado": "cancelado",
+      "show_in_export": false,
+      "partner_id": "atk",
+      "contacto_ids": [
+        "anne-schouten"
+      ],
+      "venue_id": null,
+      "venue_nombre": "Cuernavaca",
+      "hora": "11:00",
+      "precio": {
+        "mxn": 200
+      },
+      "descripcion": "Buitendag: jeu de boules, borrelen en eten",
+      "detalle": "Incl eten/drinken/jeu de boules",
+      "tier_promocion": "mediano",
+      "flyer_moment": "-30,-7 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
+      "reel_post": false,
+      "eventbrite": true,
+      "condicional": false,
+      "texto_social": "☀️ Buitendag in Cuernavaca\nZin in een gezellige dag in de buitenlucht? Ga met ons mee naar Cuernavaca en geniet van een ontspannen dag met jeu de boules, lekker eten en een verfrissende borrel. Dit is de perfecte gelegenheid om nieuwe mensen te ontmoeten, bij te kletsen en even helemaal tot rust te komen in een mooie omgeving. Schrijf je in en beleef een heerlijke dag! 🥂🎉\n\n📅 Maart\n📍 Cuernavaca",
+      "ultima_actualizacion": "2026-04-28T14:27:29.747418"
+    },
+    {
+      "id": "popo-abril",
+      "nombre": "POPO uitgave (abril)",
+      "fecha": "2026-04-01",
+      "fecha_exacta": false,
+      "estado": "pendiente",
+      "partner_id": "popo-redactie",
+      "contacto_ids": [
+        "paul-vd-voort"
+      ],
+      "venue_id": null,
+      "hora": null,
+      "precio": null,
+      "descripcion": "Uitgave van het blad De Popo voor Nederlanders in Mexico",
+      "detalle": null,
+      "tier_promocion": "publicacion",
+      "flyer_moment": "-0 dagen",
+      "flyer_responsable": "proveedor",
+      "flyer_responsable_nombre": "Paul",
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false,
+      "texto_social": "📰 De Popo – Nieuwe uitgave\nGoed nieuws! De nieuwste editie van De Popo is uit! Blijf op de hoogte van het laatste nieuws, leuke verhalen en handige informatie voor Nederlanders in Mexico. Of je nu al jaren hier woont of net bent aangekomen, De Popo houdt je verbonden met de Nederlandse gemeenschap! 📬🇳🇱\n\nAls op deze link klikt vind je deze uitgave."
+    },
+    {
+      "id": "paisaje-intercultural",
+      "nombre": "Paisaje Intercultural",
+      "fecha": "2026-05-16",
+      "estado": "confirmado",
+      "partner_id": null,
+      "partner_nombre": "Paul vd Voort/ Jasper de Gelder",
+      "contacto_ids": [
+        "paul-vd-voort"
+      ],
+      "venue_id": null,
+      "venue_nombre": "Centro Cultural Mexiquense Bicentenario, Texcoco",
+      "venue_direccion": "Carretera Federal, Los Reyes-Texcoco Km. 14.3, 56250 Texcoco de Mora, Méx.",
+      "hora": null,
+      "precio": {
+        "mxn": 0
+      },
+      "descripcion": "Expositie Ned kunstenaars",
+      "detalle": "Expositie van diverse Nederlandse kunstenaars",
+      "tier_promocion": "regular",
+      "flyer_moment": "-7 dagen",
+      "flyer_responsable": "proveedor",
+      "flyer_responsable_nombre": "Paul",
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false
+    },
+    {
+      "id": "champions-league-finale",
+      "nombre": "Champions League Finale",
+      "fecha": "2026-05-30",
+      "estado": "confirmado",
+      "partner_id": "holland-wafels",
+      "contacto_ids": [
+        "koen-houwen"
+      ],
+      "venue_id": "holland-wafels",
+      "hora": "10:00",
+      "precio": {
+        "mxn": 0
+      },
+      "descripcion": "Champions League Finale",
+      "detalle": "Grote schermen, Hollands snacks",
+      "tier_promocion": "regular",
+      "flyer_moment": "-7 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false,
+      "texto_social": "⚽ Champions League Finale – Live kijken!\nDe belangrijkste clkubvoetbal finale van dit jaar, en jij kunt er live bij zijn! Kom samen met andere voetbalfans naar Holland Wafels om de Champions League-finale te kijken op een groot scherm. Beleef de spanning, juich mee en geniet van een avond vol sport, gezelligheid en lekker eten en drinken. Zet het in je agenda en beleef de finale als nooit tevoren! 🏆🍻\n\n📅 31 mei\n📍 Holland Wafels"
+    },
+    {
+      "id": "tour-iztaccihuatl",
+      "nombre": "Tour: Falda de Iztaccíhuatl",
+      "fecha": "2026-06-06",
+      "estado": "confirmado",
+      "partner_id": "naranja-tours",
+      "contacto_ids": [
+        "coen-vd-akker"
+      ],
+      "venue_id": null,
+      "venue_nombre": "Verzamelpunt: Parque México, Condesa",
+      "hora": "06:00",
+      "precio": "1900/ 25% korting NV",
+      "descripcion": "Wandeltour",
+      "detalle": "Incl: transport, entree, fruit, snacks, BBQ, Wijn/fris/water",
+      "tier_promocion": "mediano",
+      "flyer_moment": "-30,-7 dagen",
+      "flyer_responsable": "proveedor",
+      "flyer_responsable_nombre": "Coen",
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false
+    },
+    {
+      "id": "vrijwilligers-borrel",
+      "nombre": "Vrijwilligers Borrel",
+      "fecha": "2026-06-11",
+      "fecha_exacta": false,
+      "estado": "pendiente",
+      "partner_id": "holland-wafels",
+      "contacto_ids": [
+        "koen-houwen"
+      ],
+      "venue_id": "holland-wafels",
+      "hora": null,
+      "precio": null,
+      "descripcion": "Borrel voor vrijwilligers",
+      "detalle": "Geen flyer. Alleen directe uitnodiging voor vrijwilligers",
+      "tier_promocion": "ninguno",
+      "flyer_responsable": "ninguno",
+      "delegado": false,
+      "canales": [],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false,
+      "texto_social": "🥂 Vrijwilligersborrel NV Mexico\nVrijwilligers zijn de drijvende kracht achter de NV Mexico, en daarom willen we hen bedanken! Wil je hier bij zijn. Meld je dan aan als vrijwilligerdoor hier te reageren. We nodigen je dan uit voor deze speciale borrel. Een ontspannen avond met leuke gesprekken, hapjes en drankjes. Een mooie kans om elkaar beter te leren kennen en samen te proosten op een succesvolle samenwerking! 🎉\n\n📅 Juni\n📍 Holland Wafels",
+      "_undo_snapshot": {
+        "timestamp": "2026-04-28T23:06:01.616747",
+        "user": "kmilo-aparicio",
+        "changes": {
+          "fecha": "2026-06-01"
+        }
+      },
+      "fecha_original": "2026-06-01",
+      "ultima_actualizacion": "2026-05-05T13:47:19.195342",
+      "show_in_export": false
+    },
+    {
+      "id": "wk-nederland-vs-japan",
+      "nombre": "WK Nederland vs Japan",
+      "fecha": "2026-06-14",
+      "estado": "confirmado",
+      "partner_id": "holland-wafels",
+      "contacto_ids": [
+        "koen-houwen"
+      ],
+      "venue_id": "holland-wafels",
+      "hora": "14:00",
+      "precio": {
+        "mxn": 0
+      },
+      "descripcion": "WK poule wedstrijd",
+      "detalle": "Grote schermen, Hollands snacks",
+      "tier_promocion": "regular",
+      "flyer_moment": "-4 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": true,
+      "eventbrite": false,
+      "condicional": false
+    },
+    {
+      "id": "wk-nederland-vs-qualifier",
+      "nombre": "WK Nederland vs Sweden",
+      "fecha": "2026-06-20",
+      "estado": "confirmado",
+      "partner_id": "holland-wafels",
+      "contacto_ids": [
+        "koen-houwen"
+      ],
+      "venue_id": "holland-wafels",
+      "hora": "11:00",
+      "precio": {
+        "mxn": 0
+      },
+      "descripcion": "WK poule wedstrijd",
+      "detalle": "Grote schermen, Hollands snacks",
+      "tier_promocion": "regular",
+      "flyer_moment": "-4 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": true,
+      "eventbrite": false,
+      "condicional": false,
+      "_undo_snapshot": {
+        "timestamp": "2026-05-04T17:18:38.152697",
+        "user": "kmilo-aparicio",
+        "changes": {
+          "nombre": "WK Nederland vs Qualifier"
+        }
+      },
+      "ultima_actualizacion": "2026-05-04T17:18:38.152733"
+    },
+    {
+      "id": "wk-tunesie-vs-nederland",
+      "nombre": "WK Tunesië vs Nederland",
+      "fecha": "2026-06-26",
+      "estado": "confirmado",
+      "partner_id": "holland-wafels",
+      "contacto_ids": [
+        "koen-houwen"
+      ],
+      "venue_id": "holland-wafels",
+      "hora": "17:00",
+      "precio": {
+        "mxn": 0
+      },
+      "descripcion": "WK poule wedstrijd",
+      "detalle": "Grote schermen, Hollands snacks",
+      "tier_promocion": "regular",
+      "flyer_moment": "-4 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": true,
+      "eventbrite": false,
+      "condicional": false
+    },
+    {
+      "id": "wk-32e-finale",
+      "nombre": "WK 32e finale: Nederland vs 1/2 Poule C",
+      "fecha": "2026-06-29",
+      "fecha_exacta": false,
+      "nota_fecha": "29/30 Juni",
+      "estado": "pendiente",
+      "partner_id": "holland-wafels",
+      "contacto_ids": [
+        "koen-houwen"
+      ],
+      "venue_id": "holland-wafels",
+      "hora": null,
+      "precio": {
+        "mxn": 0
+      },
+      "descripcion": "WK 32e finale wedstrijd",
+      "detalle": "Grote schermen, Hollands snacks",
+      "tier_promocion": "regular",
+      "flyer_moment": "-4 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": true,
+      "condicion": "Alleen als Nederland de 32e finale bereikt"
+    },
+    {
+      "id": "wk-16e-8e-finale",
+      "nombre": "WK 16e/8e finale: Nederland vs ?",
+      "fecha": "2026-07-01",
+      "fecha_exacta": false,
+      "nota_fecha": "Juli - fecha depende del fixture",
+      "estado": "pendiente",
+      "partner_id": "holland-wafels",
+      "contacto_ids": [
+        "koen-houwen"
+      ],
+      "venue_id": "holland-wafels",
+      "hora": null,
+      "precio": {
+        "mxn": 0
+      },
+      "descripcion": "WK 16e/8e finale wedstrijd",
+      "detalle": "Grote schermen, Hollands snacks",
+      "tier_promocion": "regular",
+      "flyer_moment": "-4 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": true,
+      "condicion": "Alleen als Nederland doorgaat naar 16e/8e finale"
+    },
+    {
+      "id": "rondleiding-chapultepec",
+      "nombre": "Rondleiding Castillo Chapultepec",
+      "fecha": "2026-08-01",
+      "fecha_exacta": true,
+      "nota_fecha": "Augustus volgens Sheet1 (V3 referentie)",
+      "estado": "confirmado",
+      "partner_id": "vicky-rodriguez",
+      "contacto_ids": [
+        "vicky-rodriguez"
+      ],
+      "venue_id": null,
+      "venue_nombre": "Castillo de Chapultepec",
+      "hora": null,
+      "precio": {
+        "mxn": 0
+      },
+      "descripcion": "Rondleiding Castillo Chapultepec (NL) met gids",
+      "detalle": "Na het succes van vorig jaar in Castillo Chapultepec, verzorgd vicky ook dit jaar weer een mooi rondleiding",
+      "tier_promocion": "regular",
+      "flyer_moment": "-7 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false,
+      "ultima_actualizacion": "2026-04-28T23:06:31.868601",
+      "fecha_original": "2026-09-15",
+      "_undo_snapshot": {
+        "timestamp": "2026-04-28T23:06:31.868576",
+        "user": "kmilo-aparicio",
+        "changes": {
+          "detalle": "Na het succes van vorig jaar in Castillo Chapultepec, verzorgd vicky ook dit jaar weer een mooi rondleiding"
+        }
+      }
+    },
+    {
+      "id": "popo-septiembre",
+      "nombre": "POPO uitgave (septiembre)",
+      "fecha": "2026-09-01",
+      "fecha_exacta": false,
+      "estado": "pendiente",
+      "partner_id": "popo-redactie",
+      "contacto_ids": [
+        "paul-vd-voort"
+      ],
+      "venue_id": null,
+      "hora": null,
+      "precio": null,
+      "descripcion": "Uitgave van het blad De Popo voor Nederlanders in Mexico",
+      "detalle": null,
+      "tier_promocion": "publicacion",
+      "flyer_moment": "-0 dagen",
+      "flyer_responsable": "proveedor",
+      "flyer_responsable_nombre": "Paul",
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false,
+      "texto_social": "📰 De Popo – Nieuwe uitgave\nDe augustus-editie van De Popo is uit! Mis geen enkel artikel en blijf op de hoogte van alles wat speelt binnen de Nederlandse gemeenschap in Mexico. Vol met inspirerende verhalen, nieuws en handige tips!\n\nAls op deze link klikt vind je deze uitgave:"
+    },
+    {
+      "id": "f1-mexico",
+      "nombre": "F1 GP México",
+      "fecha": "2026-11-01",
+      "estado": "confirmado",
+      "partner_id": "holland-wafels",
+      "contacto_ids": [
+        "koen-houwen"
+      ],
+      "venue_id": "holland-wafels",
+      "hora": "15:00",
+      "precio": {
+        "mxn": 0
+      },
+      "descripcion": "GP F1 México",
+      "detalle": "Grote schermen, Hollands snacks",
+      "tier_promocion": "regular",
+      "flyer_moment": "-4 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false,
+      "texto_social": "🏎️ GP van Mexico – Live bij Holland Wafels\nDe Formule 1 komt naar Mexico en dat vieren we groots! Kijk samen met andere F1-fans hoe Max Verstappen en de rest racen op het circuit in Mexico-Stad. Voel de adrenaline, moedig je favoriet aan en geniet van een topmiddag met bier en bitterballen. Dit wordt een race om nooit te vergeten! 🏁🚀\n\n📅 26 oktober, 2 pm\n📍 Holland Wafels"
+    },
+    {
+      "id": "sinterklaas",
+      "nombre": "Sinterklaas",
+      "partner_nombre": "Sprinkhaan",
+      "fecha": "2026-12-05",
+      "estado": "confirmado",
+      "partner_id": "de-sprinkhaan",
+      "contacto_ids": [
+        "mirjam-van-vliet"
+      ],
+      "venue_id": null,
+      "venue_nombre": "Snowapple (según Hoja1)",
+      "hora": "11:00",
+      "precio": "100k/200volw",
+      "descripcion": "Sinterklaas voor kinderen",
+      "detalle": "Sinterklaas feest, knutselen, dansen, zingen, muziek",
+      "tier_promocion": "grande",
+      "flyer_moment": "-60,-30,-7 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 3,
+      "delegado": false,
+      "canales": [
+        "flyer",
+        "reel",
+        "eventbrite",
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
+      "reel_post": true,
+      "eventbrite": true,
+      "condicional": false,
+      "texto_social": "🎅 Sinterklaasfeest bij Snowapple\nSinterklaas komt ook dit jaar weer naar Mexico! Vier dit gezellige kinderfeest met pepernoten, cadeautjes en natuurlijk een bezoek van de Sint. Mis deze oer-Hollandse traditie niet en kom gezellig meevieren! 🎁🎶\n\nKoop je kaartjes via deze link: Let op er zijn een bepérkt aantal plekken. Zorg dus dat je op tijd bent. Nadere informatie over de kaartjes vind je ook via de link.\n\n📅 November, .. uur - ..uur\n📍 Locatie:"
+    },
+    {
+      "id": "popo-diciembre",
+      "nombre": "POPO uitgave (diciembre)",
+      "fecha": "2026-12-01",
+      "fecha_exacta": false,
+      "estado": "pendiente",
+      "partner_id": "popo-redactie",
+      "contacto_ids": [
+        "paul-vd-voort"
+      ],
+      "venue_id": null,
+      "hora": null,
+      "precio": null,
+      "descripcion": "Uitgave van het blad De Popo voor Nederlanders in Mexico",
+      "detalle": "Laatste editie van het jaar",
+      "tier_promocion": "publicacion",
+      "flyer_moment": "-0 dagen",
+      "flyer_responsable": "proveedor",
+      "flyer_responsable_nombre": "Paul",
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
+      "reel_post": false,
+      "eventbrite": false,
+      "condicional": false,
+      "texto_social": "📰 De Popo – Laatste editie van het jaar!\nNog één keer dit jaar het laatste nieuws, boeiende verhalen en leuke interviews speciaal voor Nederlanders in Mexico. Je vind hier het laatste exemplaar van De Popo en blijf betrokken bij de gemeenschap! 📖\n\nAls op deze link klikt vind je deze uitgave:"
+    },
+    {
+      "id": "nieuwjaarsreceptie-2027",
+      "nombre": "Nieuwjaarsreceptie 2027 (incl ALV)",
+      "fecha": "2027-01-21",
+      "fecha_exacta": true,
+      "nota_fecha": "Enero 2027 - fecha exacta por definir",
+      "estado": "confirmado",
+      "partner_id": "embajada-nl",
+      "contacto_ids": [
+        "rocco-van-velzen"
+      ],
+      "venue_id": "embajada-nl",
+      "hora": "19:00",
+      "precio": {
+        "mxn": 200
+      },
+      "descripcion": "Nieuwjaars Receptie",
+      "detalle": "Incl: borrel hap/drankjes. Eventbrite link toevoegen",
+      "tier_promocion": "mediano",
+      "flyer_moment": "-17 dagen",
+      "flyer_responsable": "nv",
+      "flyer_oleadas": 1,
+      "delegado": false,
+      "canales": [
+        "whatsapp",
+        "rrss",
+        "email"
+      ],
+      "reel_post": true,
+      "eventbrite": true,
+      "condicional": false
+    }
+  ]
+}

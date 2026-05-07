@@ -1,0 +1,44 @@
+{
+  "tiers": {
+    "grande": {
+      "nombre": "Grande",
+      "oleadas_flyer": 3,
+      "flyer_moments": ["-60 días", "-30 días", "-7 días"],
+      "canales": ["flyer", "reel", "eventbrite", "whatsapp", "rrss", "email"],
+      "eventos_tipicos": ["Koningsdag", "Sinterklaas"],
+      "descripcion": "3 oleadas de promoción completa. Eventos flagship de NV."
+    },
+    "mediano": {
+      "nombre": "Mediano",
+      "oleadas_flyer": 1,
+      "flyer_moments": ["-17 a -30 días"],
+      "canales": ["flyer", "eventbrite", "whatsapp", "rrss", "email"],
+      "eventos_tipicos": ["Nieuwjaarsreceptie", "Buitendag", "Tour Iztaccíhuatl"],
+      "descripcion": "1 oleada de promoción con cobertura amplia."
+    },
+    "regular": {
+      "nombre": "Regular",
+      "oleadas_flyer": 1,
+      "flyer_moments": ["-4 a -7 días"],
+      "canales": ["flyer", "whatsapp", "rrss"],
+      "eventos_tipicos": ["Pub Quiz", "partidos de fútbol", "Dictado", "F1"],
+      "descripcion": "Promoción corta, enfocada en WhatsApp y RRSS."
+    },
+    "delegado": {
+      "nombre": "Delegado",
+      "oleadas_flyer": 0,
+      "flyer_moments": ["Variable - el partner decide"],
+      "canales": [],
+      "eventos_tipicos": ["Pub Quiz individual", "Elfstedentocht", "Taalkamp"],
+      "descripcion": "El proveedor gestiona su propia promoción. NV solo hace check-in."
+    },
+    "publicacion": {
+      "nombre": "Publicación",
+      "oleadas_flyer": 0,
+      "flyer_moments": ["-0 días (se anuncia el día de publicación)"],
+      "canales": ["whatsapp", "rrss", "email"],
+      "eventos_tipicos": ["POPO (3 ediciones)"],
+      "descripcion": "Solo se anuncia el día que sale la publicación."
+    }
+  }
+}

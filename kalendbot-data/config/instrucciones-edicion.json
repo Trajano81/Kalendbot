@@ -1,0 +1,70 @@
+{
+  "version": "1.0",
+  "fields": [
+    {"field": "fecha", "excel_col": "B", "display_name": "Fecha del evento", "type": "date", "permission": "owner", "example": "2026-05-01"},
+    {"field": "fecha_inicio", "excel_col": "B", "display_name": "Fecha inicio (multi-día)", "type": "date", "permission": "owner", "example": "2026-04-30"},
+    {"field": "fecha_fin", "excel_col": "B", "display_name": "Fecha fin (multi-día)", "type": "date", "permission": "owner", "example": "2026-05-03"},
+    {"field": "fecha_exacta", "excel_col": "—", "display_name": "Fecha confirmada", "type": "bool", "permission": "owner", "example": "true/false"},
+    {"field": "nota_fecha", "excel_col": "—", "display_name": "Nota sobre fecha", "type": "text", "permission": "owner", "example": "Movido por Semana Santa"},
+    {"field": "nombre", "excel_col": "C", "display_name": "Nombre del evento", "type": "text", "permission": "owner", "example": "Koningsdag"},
+    {"field": "hora", "excel_col": "I", "display_name": "Hora del evento", "type": "text", "permission": "owner", "example": "19:00"},
+    {"field": "hora_detalle", "excel_col": "I", "display_name": "Detalle de horario", "type": "text", "permission": "owner", "example": "Kinderprogramma 3pm-7pm"},
+    {"field": "venue_nombre", "excel_col": "E", "display_name": "Nombre del venue", "type": "text", "permission": "owner", "example": "Holland Wafels Polanco"},
+    {"field": "venue_direccion", "excel_col": "K", "display_name": "Dirección del venue", "type": "text", "permission": "owner", "example": "Calle Versalles 78, CDMX"},
+    {"field": "partner_nombre", "excel_col": "D", "display_name": "Nombre del partner", "type": "text", "permission": "owner", "example": "Holland Wafels"},
+    {"field": "precio", "excel_col": "J", "display_name": "Precio (MXN)", "type": "precio", "permission": "owner", "example": "150, gratis, na"},
+    {"field": "descripcion", "excel_col": "H", "display_name": "Descripción corta", "type": "text", "permission": "owner", "example": "Borrel + ALV"},
+    {"field": "detalle", "excel_col": "L", "display_name": "Detalles adicionales", "type": "text", "permission": "owner", "example": "Incl: borrel hap/drankjes"},
+    {"field": "tier_promocion", "excel_col": "—", "display_name": "Tier de promoción", "type": "enum", "permission": "admin", "example": "regular/mediano/grande/delegado/publicacion/ninguno"},
+    {"field": "flyer_responsable", "excel_col": "Q", "display_name": "Responsable del flyer", "type": "enum", "permission": "admin", "example": "nv/proveedor/ninguno"},
+    {"field": "flyer_responsable_nombre", "excel_col": "Q", "display_name": "Nombre responsable flyer", "type": "text", "permission": "admin", "example": "Christian Kemper"},
+    {"field": "flyer_oleadas", "excel_col": "P", "display_name": "Oleadas de flyer", "type": "int", "permission": "admin", "example": "1, 2, 3"},
+    {"field": "flyer_moment", "excel_col": "M", "display_name": "Momento del flyer", "type": "text", "permission": "admin", "example": "-60,-30,-7 dias"},
+    {"field": "reel_post", "excel_col": "R", "display_name": "Publicar reel", "type": "bool", "permission": "owner", "example": "true/false"},
+    {"field": "eventbrite", "excel_col": "S", "display_name": "Publicar en Eventbrite", "type": "bool", "permission": "owner", "example": "true/false"},
+    {"field": "delegado", "excel_col": "—", "display_name": "Evento delegado", "type": "bool", "permission": "admin", "example": "true/false"}
+  ],
+  "roles": {
+    "admin": "Acceso completo a todos los campos y eventos",
+    "tester": "Igual que admin (entorno de pruebas)",
+    "contacto": "Solo campos 'owner' en eventos propios (donde aparece en contacto_ids)",
+    "readonly": "Solo consultas, no puede editar ningún campo"
+  },
+  "usage_guide": {
+    "edit_flow": "Pide el cambio al bot → muestra preview con diagnóstico de impacto → confirmas → se aplica. Puedes deshacer el último cambio.",
+    "examples": [
+      "Cambia la hora del Koningsdag a las 15:00",
+      "Actualiza el venue del Dictee a Holland Wafels Polanco y la hora a 19:00",
+      "Pon el precio del Kerstborrel en 200",
+      "Deshacer cambios en Koningsdag"
+    ]
+  },
+  "agent_activation": {
+    "telegram_private": "Envía un mensaje directo al bot",
+    "telegram_group": "Menciona al bot con @KalendBot o usa / al inicio del mensaje",
+    "commands": {
+      "/start": "Identificarte con el bot",
+      "/cambiar": "Editar campos de un evento (nombre, fecha, hora, venue, etc.)",
+      "/estado": "Cambiar estado de un evento (pendiente/confirmado/cancelado)",
+      "/buscar": "Buscar eventos por nombre",
+      "/pendientes": "Listar eventos pendientes",
+      "/proximos": "Listar próximos eventos",
+      "/evento": "Ver detalle completo de un evento",
+      "/deshacer": "Revertir último cambio en un evento",
+      "/export_excel": "Exportar calendario a Excel",
+      "/export_jpeg": "Exportar calendario como imagen",
+      "/export_instructions": "Ver esta guía de campos editables y permisos"
+    }
+  },
+  "tools_reference": {
+    "CalendarManager": "Consultar y editar eventos del calendario (preview, confirm, undo)",
+    "ContactManager": "Buscar información de contactos por nombre",
+    "ProviderManager": "Buscar información de proveedores/partners",
+    "ConflictDetector": "Verificar conflictos de fechas (feriados, otros eventos)",
+    "RulesEngine": "Consultar reglas de negocio (tiers, precedencia, restricciones)",
+    "DateLocker": "Confirmar/bloquear fechas de eventos",
+    "GroupNotifier": "Enviar mensajes al grupo de NV Mexico",
+    "FlyerManager": "Gestionar flujo de flyers y recordatorios",
+    "CalendarExporter": "Exportar calendario a Excel/JPEG en varios idiomas"
+  }
+}

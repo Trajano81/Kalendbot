@@ -1,0 +1,58 @@
+{
+  "feriados_mexico_2026": [
+    {"fecha": "2026-01-01", "nombre": "Año Nuevo"},
+    {"fecha": "2026-02-02", "nombre": "Día de la Constitución (se mueve al lunes)"},
+    {"fecha": "2026-03-16", "nombre": "Natalicio de Benito Juárez (lunes)"},
+    {"fecha": "2026-04-06", "nombre": "Semana Santa (variable - verificar año)"},
+    {"fecha": "2026-05-01", "nombre": "Día del Trabajo"},
+    {"fecha": "2026-09-16", "nombre": "Día de la Independencia"},
+    {"fecha": "2026-11-01", "nombre": "Día de Muertos"},
+    {"fecha": "2026-11-02", "nombre": "Día de Muertos"},
+    {"fecha": "2026-11-16", "nombre": "Revolución Mexicana (se mueve al lunes)"},
+    {"fecha": "2026-12-25", "nombre": "Navidad"}
+  ],
+  "reglas_implicitas": [
+    {
+      "id": "no-semana-santa",
+      "regla": "No programar eventos en Semana Santa",
+      "evidencia": "Koningsdag fue movido explícitamente del 25 abril al 3 mayo citando Semana Santa",
+      "activa": true
+    },
+    {
+      "id": "no-navidad",
+      "regla": "No programar eventos en periodo Navidad/Año Nuevo (dic 20 - ene 5)",
+      "evidencia": "Diciembre solo tiene POPO; enero arranca con Recepción",
+      "activa": true
+    },
+    {
+      "id": "verano-ligero",
+      "regla": "Julio-agosto son meses ligeros",
+      "evidencia": "Solo Mundial (condicional) y Rondleiding en ese periodo",
+      "activa": true
+    },
+    {
+      "id": "transicion-sep-oct",
+      "regla": "Septiembre-octubre son meses de transición con poca actividad",
+      "evidencia": "Solo POPO en septiembre; octubre retoma con F1",
+      "activa": true
+    },
+    {
+      "id": "pub-quiz-pausa-s2",
+      "regla": "Pub Quiz puede pausar en segundo semestre",
+      "evidencia": "Última instancia listada: 4 de junio. No hay Pub Quiz de julio a diciembre",
+      "activa": true
+    },
+    {
+      "id": "deportivos-condicionales",
+      "regla": "Eventos de fútbol en eliminatorias son condicionales",
+      "evidencia": "Rondas eliminatorias del Mundial dependen de que Holanda avance",
+      "activa": true
+    },
+    {
+      "id": "delegados-sin-gestion",
+      "regla": "Eventos marcados 'contact post zelf' tienen gestión autónoma del proveedor",
+      "evidencia": "Columnas de difusión en 'x' para todos los delegados",
+      "activa": true
+    }
+  ]
+}

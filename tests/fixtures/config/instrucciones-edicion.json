@@ -1,0 +1,9 @@
+{
+  "version": "test",
+  "campos_editables": ["nombre", "fecha", "estado", "hora", "precio"],
+  "roles": {
+    "admin": "acceso total",
+    "contacto": "solo sus eventos",
+    "readonly": "sin edicion"
+  }
+}

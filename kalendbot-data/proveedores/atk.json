@@ -1,0 +1,8 @@
+{
+  "id": "atk",
+  "nombre": "AtK",
+  "tipo": "co_organizador",
+  "dependencia": "baja",
+  "nota": "1 evento anual (Buitendag en Cuernavaca). Co-organizador social.",
+  "riesgos_conocidos": []
+}

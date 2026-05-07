@@ -1,0 +1,42 @@
+{
+  "reglas_precedencia": [
+    {
+      "id": 1,
+      "regla": "Eventos culturales/tradición tienen precedencia sobre deportivos",
+      "ejemplo": "Sinterklaas > Champions League",
+      "razon": "La tradición es la identidad de NV Mexico"
+    },
+    {
+      "id": 2,
+      "regla": "Primer confirmado tiene precedencia sobre segundo solicitante",
+      "excepcion": "Salvo que el segundo sea evento cultural/tradición (regla 1)"
+    },
+    {
+      "id": 3,
+      "regla": "Eventos con Eventbrite (pagados) tienen precedencia sobre gratuitos",
+      "razon": "Compromiso financiero con asistentes ya registrados"
+    },
+    {
+      "id": 4,
+      "regla": "Holland Wafels como venue tiene precedencia sobre otros venues",
+      "razon": "Proveedor crítico, relación a proteger"
+    }
+  ],
+  "compatibilidad_fechas": {
+    "mismo_venue_mismo_horario": "bloqueado",
+    "mismo_venue_diferente_horario": {
+      "permitido": true,
+      "buffer_horas": 3,
+      "requiere": "confirmación del venue"
+    },
+    "diferente_venue_misma_audiencia": {
+      "permitido": true,
+      "alerta": "Posible canibalización de asistencia"
+    },
+    "diferente_venue_diferente_audiencia": {
+      "permitido": true,
+      "nota": "Sin conflicto real"
+    }
+  },
+  "ultima_instancia": "director_proyecto"
+}

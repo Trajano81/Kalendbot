@@ -1,0 +1,21 @@
+{
+  "id": "rene-wieben",
+  "nombre": "Rene Wieben (guía independiente)",
+  "partner_display": "Rene Wieben",
+  "tipo": "guia",
+  "dependencia": "baja",
+  "nota": "1 evento anual (Escalada Pico de Águila, Ajusco). Guía personal, no empresa.",
+  "riesgos_conocidos": [
+    {
+      "tipo": "capacidad_humana",
+      "descripcion": "Único guía, sin backup conocido",
+      "accion_bot": "Preguntar por contacto de respaldo"
+    },
+    {
+      "tipo": "climatico",
+      "descripcion": "Escalada en Ajusco afectada por temporada de lluvias (jun-sep)",
+      "meses_riesgo": [6, 7, 8, 9],
+      "accion_bot": "Verificar que la fecha no caiga en temporada de lluvias"
+    }
+  ]
+}

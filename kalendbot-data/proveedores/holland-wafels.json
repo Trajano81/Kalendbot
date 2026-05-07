@@ -1,0 +1,15 @@
+{
+  "id": "holland-wafels",
+  "nombre": "Holland Wafels",
+  "tipo": "venue",
+  "direccion": "Calle Versalles 78, CDMX",
+  "dependencia": "critica",
+  "nota": "Alberga ~45% de la actividad anual (11+ eventos). Venue principal de NV Mexico.",
+  "riesgos_conocidos": [
+    {
+      "tipo": "concentracion",
+      "descripcion": "Si el venue no está disponible, se afectan 11+ eventos",
+      "accion_bot": "Mantener lista de venues alternativos en CDMX"
+    }
+  ]
+}

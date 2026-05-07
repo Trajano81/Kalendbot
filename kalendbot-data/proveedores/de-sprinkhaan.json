@@ -1,0 +1,14 @@
+{
+  "id": "de-sprinkhaan",
+  "nombre": "De Sprinkhaan",
+  "tipo": "organizador_programa_infantil",
+  "dependencia": "alta",
+  "nota": "Único proveedor de contenido infantil. Organiza Elfstedentocht, Taalkamp, programa infantil de Koningsdag y Sinterklaas.",
+  "riesgos_conocidos": [
+    {
+      "tipo": "nicho",
+      "descripcion": "Sin alternativa para programa de niños",
+      "accion_bot": "Confirmar disponibilidad con anticipación extra"
+    }
+  ]
+}

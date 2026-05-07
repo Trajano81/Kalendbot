@@ -1,0 +1,20 @@
+{
+  "id": "vicky-rodriguez",
+  "nombre": "Vicky Rodriguez (guía independiente)",
+  "partner_display": "Vicky Rodriguez",
+  "tipo": "guia",
+  "dependencia": "baja",
+  "nota": "1 evento anual (Rondleiding Castillo Chapultepec en neerlandés). Guía personal, no empresa.",
+  "riesgos_conocidos": [
+    {
+      "tipo": "acceso",
+      "descripcion": "Castillo de Chapultepec puede cerrar por mantenimiento o evento gubernamental",
+      "accion_bot": "Verificar disponibilidad del venue con anticipación"
+    },
+    {
+      "tipo": "capacidad_humana",
+      "descripcion": "Única guía de habla neerlandesa para este tour",
+      "accion_bot": "Confirmar disponibilidad personal con anticipación"
+    }
+  ]
+}
