@@ -136,6 +136,7 @@ def create_contact_json(nombre: str, telefono: str, telegram_id: int = None, can
         "canal_preferido": canal,
         "rol": "Usuario",
         "rol_kalendbot": "readonly",
+        "idioma": "es",
     }
     if telegram_id:
         contact_data["telegram_id"] = telegram_id
@@ -157,6 +158,39 @@ def save_telegram_id(filepath: str, telegram_id: int) -> None:
         logger.info(f"telegram_id {telegram_id} guardado en {filepath}")
     except Exception as e:
         logger.error(f"Error guardando telegram_id: {e}")
+
+
+SUPPORTED_LANGUAGES = {
+    "es": "Español",
+    "en": "English",
+    "nl": "Nederlands",
+}
+
+
+def get_contact_language(contact_id: str) -> str:
+    """Returns the preferred language code for a contact. Defaults to 'es'."""
+    contact = load_contact(contact_id)
+    if contact:
+        return contact.get("idioma", "es")
+    return "es"
+
+
+def set_contact_language(contact_id: str, lang: str) -> bool:
+    """Sets the preferred language for a contact. Returns True on success."""
+    if lang not in SUPPORTED_LANGUAGES:
+        return False
+    filepath = os.path.join(DATA_DIR, "contactos", f"{contact_id}.json")
+    try:
+        with open(filepath, "r", encoding="utf-8") as f:
+            contact = json.load(f)
+        contact["idioma"] = lang
+        with open(filepath, "w", encoding="utf-8") as f:
+            json.dump(contact, f, ensure_ascii=False, indent=2)
+        logger.info(f"Idioma de {contact_id} actualizado a {lang}")
+        return True
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        logger.error(f"Error actualizando idioma de {contact_id}: {e}")
+        return False
 
 
 def strip_markdown(text: str) -> str:

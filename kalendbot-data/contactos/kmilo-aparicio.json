@@ -6,5 +6,6 @@
   "canal_preferido": "telegram",
   "rol": "Administrador",
   "rol_kalendbot": "admin",
-  "telegram_id": 8286885660
+  "telegram_id": 8286885660,
+  "idioma": "es"
 }

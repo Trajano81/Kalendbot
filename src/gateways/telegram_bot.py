@@ -23,6 +23,9 @@ from src.gateways.contacts import (
     save_telegram_id,
     load_contact,
     strip_markdown,
+    get_contact_language,
+    set_contact_language,
+    SUPPORTED_LANGUAGES,
 )
 
 logger = logging.getLogger("kalendbot.telegram")
@@ -405,6 +408,20 @@ async def _handle_group_command(update: Update, context: ContextTypes.DEFAULT_TY
     cmd_match = re.match(r'^/(\w+)', text)
     if cmd_match:
         cmd = cmd_match.group(1).split("@")[0]  # Remove @botname from command
+        # Route to dedicated handler if one exists
+        _direct = {
+            "start": _start_command,
+            "export_excel": _handle_export_excel, "exportar_excel": _handle_export_excel,
+            "export_jpeg": _handle_export_jpeg, "exportar_jpeg": _handle_export_jpeg,
+            "export_jpeg_codes": _handle_export_jpeg_codes, "exportar_codigos": _handle_export_jpeg_codes,
+            "export_instructions": _handle_export_instructions, "exportar_instrucciones": _handle_export_instructions,
+            "help": _handle_help, "ayuda": _handle_help,
+            "ocultar": _handle_hide, "hide": _handle_hide, "verbergen": _handle_hide,
+            "mostrar": _handle_show, "show": _handle_show, "tonen": _handle_show,
+            "idioma": _handle_idioma, "language": _handle_idioma,
+        }
+        if cmd in _direct:
+            return await _direct[cmd](update, context)
         clean = f"{cmd} {clean}".strip()
 
     if not clean:
@@ -707,6 +724,10 @@ async def _handle_export_excel(update: Update, context: ContextTypes.DEFAULT_TYP
 
 async def _handle_export_jpeg(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Comando /export_jpeg — genera y envía imagen JPEG del calendario."""
+    # Route "/export_jpeg codes" to the codes handler
+    if context.args and context.args[0].lower() == "codes":
+        return await _handle_export_jpeg_codes(update, context)
+
     telegram_id = update.message.from_user.id
     contact_id = identify_by_telegram_id(telegram_id)
 
@@ -877,30 +898,157 @@ async def _toggle_show_export(update: Update, show: bool) -> None:
     logger.info(f"{action} evento por {contact_id}: {result}")
 
 
-async def _handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Comando /help — lista comandos disponibles."""
-    help_text = (
+_HELP_TEXT = {
+    "es": (
         "Comandos disponibles:\n\n"
         "Calendario:\n"
-        "/cambiar (o /change) — Editar campos de eventos\n"
-        "/estado (o /status) — Cambiar estado de un evento\n"
-        "/buscar (o /search) — Buscar eventos por nombre\n"
+        "/cambiar — Editar campos de eventos\n"
+        "/estado — Cambiar estado de un evento\n"
+        "/buscar — Buscar eventos por nombre\n"
         "/pendientes — Listar eventos pendientes\n"
-        "/proximos — Listar próximos eventos\n"
+        "/proximos — Listar proximos eventos\n"
         "/evento — Ver detalle de un evento\n"
-        "/deshacer (o /undo) — Revertir último cambio\n"
+        "/deshacer — Revertir ultimo cambio\n"
         "/ocultar — Ocultar evento del export\n"
         "/mostrar — Mostrar evento en el export\n\n"
         "Exportar:\n"
-        "/export_excel — Exportar calendario a Excel\n"
-        "/export_jpeg — Exportar calendario como imagen\n"
-        "/export_jpeg_codes — Ver codigos de actividades\n"
-        "/export_instructions — Ver campos editables y permisos\n\n"
-        "/help — Mostrar esta ayuda\n\n"
-        "En grupo, tambien puedes mencionarme seguido de tu pregunta.\n\n"
+        "/exportar_excel — Exportar calendario a Excel\n"
+        "/exportar_jpeg — Exportar como imagen\n"
+        "/exportar_codigos — Ver codigos de actividades\n"
+        "/exportar_instrucciones — Ver campos editables y permisos\n\n"
+        "Configuracion:\n"
+        "/idioma — Cambiar idioma del bot\n"
+        "/ayuda — Mostrar esta ayuda\n\n"
+        "En grupo, tambien puedes mencionarme seguido de tu pregunta.\n"
         "Tip: Usa bullet points (*.) para enviar multiples cambios en un solo mensaje."
-    )
-    await update.message.reply_text(help_text)
+    ),
+    "en": (
+        "Available commands:\n\n"
+        "Calendar:\n"
+        "/change — Edit event fields\n"
+        "/status — Change event status\n"
+        "/search — Search events by name\n"
+        "/pending — List pending events\n"
+        "/upcoming — View upcoming events\n"
+        "/event — View event details\n"
+        "/undo — Revert last change\n"
+        "/hide — Hide event from export\n"
+        "/show — Show event in export\n\n"
+        "Export:\n"
+        "/export_excel — Export calendar to Excel\n"
+        "/export_jpeg — Export as image\n"
+        "/export_jpeg_codes — View activity codes\n"
+        "/export_instructions — View editable fields and permissions\n\n"
+        "Settings:\n"
+        "/language — Change bot language\n"
+        "/help — Show this help\n\n"
+        "In groups, you can also mention me followed by your question.\n"
+        "Tip: Use bullet points (*.) to send multiple changes in a single message."
+    ),
+    "nl": (
+        "Beschikbare commando's:\n\n"
+        "Kalender:\n"
+        "/change — Evenementvelden bewerken\n"
+        "/status — Evenementstatus wijzigen\n"
+        "/search — Evenementen zoeken op naam\n"
+        "/pending — Openstaande evenementen\n"
+        "/upcoming — Komende evenementen\n"
+        "/event — Evenementdetails bekijken\n"
+        "/undo — Laatste wijziging ongedaan maken\n"
+        "/hide — Evenement verbergen uit export\n"
+        "/show — Evenement tonen in export\n\n"
+        "Exporteren:\n"
+        "/export_excel — Kalender exporteren naar Excel\n"
+        "/export_jpeg — Exporteren als afbeelding\n"
+        "/export_jpeg_codes — Activiteitscodes bekijken\n"
+        "/export_instructions — Bewerkbare velden en rechten\n\n"
+        "Instellingen:\n"
+        "/language — Taal wijzigen\n"
+        "/help — Deze hulp tonen\n\n"
+        "In groepen kun je me ook noemen gevolgd door je vraag.\n"
+        "Tip: Gebruik bullet points (*.) om meerdere wijzigingen in een bericht te sturen."
+    ),
+}
+
+
+async def _handle_help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Comando /help — lista comandos disponibles, in the user's language."""
+    contact_id = identify_by_telegram_id(update.message.from_user.id)
+    lang = get_contact_language(contact_id) if contact_id else "es"
+    await update.message.reply_text(_HELP_TEXT.get(lang, _HELP_TEXT["es"]))
+
+
+async def _set_user_commands(bot, telegram_id: int, lang: str, chat_id: int = None) -> None:
+    """Sets the command menu for a specific user based on their language.
+    Sets for DM (BotCommandScopeChat) and group (BotCommandScopeChatMember) if chat_id differs.
+    """
+    from telegram import BotCommandScopeChat, BotCommandScopeChatMember
+    cmds = _COMMANDS_BY_LANG.get(lang, _COMMANDS_BY_LANG["es"])
+    # Always set for DM — delete first to bust Telegram cache
+    dm_scope = BotCommandScopeChat(chat_id=telegram_id)
+    try:
+        await bot.delete_my_commands(scope=dm_scope)
+        await bot.set_my_commands(cmds, scope=dm_scope)
+    except Exception as e:
+        logger.warning(f"Could not set DM commands for {telegram_id}: {e}")
+    # If called from a group, also set for that group
+    if chat_id and chat_id != telegram_id:
+        group_scope = BotCommandScopeChatMember(chat_id=chat_id, user_id=telegram_id)
+        try:
+            await bot.delete_my_commands(scope=group_scope)
+            await bot.set_my_commands(cmds, scope=group_scope)
+        except Exception as e:
+            logger.warning(f"Could not set group commands for {telegram_id} in {chat_id}: {e}")
+
+
+async def _handle_idioma(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Comando /idioma — muestra o cambia el idioma preferido del usuario."""
+    telegram_id = update.message.from_user.id
+    contact_id = identify_by_telegram_id(telegram_id)
+    if not contact_id:
+        await update.message.reply_text("No estás identificado. Usa /start primero.")
+        return
+
+    # If user passed a language code directly (e.g. /idioma en)
+    if context.args and context.args[0].lower() in SUPPORTED_LANGUAGES:
+        lang = context.args[0].lower()
+        set_contact_language(contact_id, lang)
+        await _set_user_commands(context.bot, telegram_id, lang, chat_id=update.message.chat.id)
+        msg = {"es": "Idioma actualizado a", "en": "Language set to", "nl": "Taal ingesteld op"}
+        await update.message.reply_text(f"{msg.get(lang, msg['es'])}: {SUPPORTED_LANGUAGES[lang]}")
+        return
+
+    # Show inline keyboard with language options
+    current = get_contact_language(contact_id)
+    buttons = []
+    for code, name in SUPPORTED_LANGUAGES.items():
+        label = f"{'> ' if code == current else ''}{name}"
+        buttons.append(InlineKeyboardButton(label, callback_data=f"lang:{code}"))
+    keyboard = InlineKeyboardMarkup([buttons])
+    await update.message.reply_text("Selecciona tu idioma / Select your language:", reply_markup=keyboard)
+
+
+async def _handle_lang_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handles inline button callback for language selection."""
+    query = update.callback_query
+    await query.answer()
+    data = query.data
+    if not data.startswith("lang:"):
+        return
+    lang = data.split(":")[1]
+    if lang not in SUPPORTED_LANGUAGES:
+        return
+
+    telegram_id = query.from_user.id
+    contact_id = identify_by_telegram_id(telegram_id)
+    if not contact_id:
+        await query.edit_message_text("No estás identificado. Usa /start primero.")
+        return
+
+    set_contact_language(contact_id, lang)
+    await _set_user_commands(context.bot, telegram_id, lang, chat_id=query.message.chat.id)
+    msg = {"es": "Idioma actualizado a", "en": "Language set to", "nl": "Taal ingesteld op"}
+    await query.edit_message_text(f"{msg.get(lang, msg['es'])}: {SUPPORTED_LANGUAGES[lang]}")
 
 
 async def _handle_export_instructions(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -914,24 +1062,71 @@ async def _handle_export_instructions(update: Update, context: ContextTypes.DEFA
         await update.message.reply_text(f"Error generando instrucciones: {e}")
 
 
-async def _post_init(application: Application) -> None:
-    """Register bot commands for the Telegram menu popup."""
-    commands = [
+_COMMANDS_BY_LANG = {
+    "es": [
         BotCommand("cambiar", "Editar campos de eventos"),
-        BotCommand("change", "Edit event fields (alias)"),
         BotCommand("buscar", "Buscar eventos por nombre"),
         BotCommand("estado", "Cambiar estado de un evento"),
         BotCommand("pendientes", "Listar eventos pendientes"),
         BotCommand("proximos", "Ver proximos eventos"),
         BotCommand("ocultar", "Ocultar evento del export"),
         BotCommand("mostrar", "Mostrar evento en el export"),
-        BotCommand("export_excel", "Exportar calendario a Excel"),
-        BotCommand("export_jpeg", "Exportar calendario como imagen"),
-        BotCommand("export_jpeg_codes", "Ver codigos de actividades"),
-        BotCommand("help", "Mostrar comandos disponibles"),
-    ]
+        BotCommand("exportar_excel", "Exportar calendario a Excel"),
+        BotCommand("exportar_jpeg", "Exportar como imagen"),
+        BotCommand("exportar_codigos", "Ver codigos de actividades"),
+        BotCommand("idioma", "Cambiar idioma"),
+        BotCommand("ayuda", "Mostrar comandos disponibles"),
+    ],
+    "en": [
+        BotCommand("change", "Edit event fields"),
+        BotCommand("search", "Search events by name"),
+        BotCommand("status", "Change event status"),
+        BotCommand("pending", "List pending events"),
+        BotCommand("upcoming", "View upcoming events"),
+        BotCommand("hide", "Hide event from export"),
+        BotCommand("show", "Show event in export"),
+        BotCommand("export_excel", "Export calendar to Excel"),
+        BotCommand("export_jpeg", "Export as image"),
+        BotCommand("export_jpeg_codes", "View activity codes"),
+        BotCommand("language", "Change language"),
+        BotCommand("help", "Show available commands"),
+    ],
+    "nl": [
+        BotCommand("change", "Evenementvelden bewerken"),
+        BotCommand("search", "Evenementen zoeken op naam"),
+        BotCommand("status", "Evenementstatus wijzigen"),
+        BotCommand("pending", "Openstaande evenementen"),
+        BotCommand("upcoming", "Komende evenementen"),
+        BotCommand("hide", "Evenement verbergen uit export"),
+        BotCommand("show", "Evenement tonen in export"),
+        BotCommand("export_excel", "Kalender exporteren naar Excel"),
+        BotCommand("export_jpeg", "Exporteren als afbeelding"),
+        BotCommand("export_jpeg_codes", "Activiteitscodes bekijken"),
+        BotCommand("language", "Taal wijzigen"),
+        BotCommand("help", "Beschikbare commando's"),
+    ],
+}
+
+
+async def _post_init(application: Application) -> None:
+    """Register bot commands for the Telegram menu popup."""
+    from telegram import BotCommandScopeDefault, BotCommandScopeAllGroupChats
+    # Clear ALL old commands (every scope + every language override)
+    for scope in (BotCommandScopeDefault(), BotCommandScopeAllGroupChats()):
+        try:
+            await application.bot.delete_my_commands(scope=scope)
+        except Exception:
+            pass
+        for lc in ("es", "en", "nl"):
+            try:
+                await application.bot.delete_my_commands(scope=scope, language_code=lc)
+            except Exception:
+                pass
+    # Set ONE command set (Spanish) for everyone, regardless of Telegram app language
+    commands = _COMMANDS_BY_LANG["es"]
     await application.bot.set_my_commands(commands)
-    logger.info("Comandos del bot registrados en Telegram")
+    await application.bot.set_my_commands(commands, scope=BotCommandScopeAllGroupChats())
+    logger.info("Comandos del bot registrados en Telegram (es)")
 
 
 async def _handle_dm_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -955,6 +1150,20 @@ async def _handle_dm_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
     cmd_match = re.match(r'^/(\w+)(@\S+)?\s*(.*)', text, re.DOTALL)
     if cmd_match:
         cmd = cmd_match.group(1)
+        # Route to dedicated handler if one exists
+        _direct = {
+            "start": _start_command,
+            "export_excel": _handle_export_excel, "exportar_excel": _handle_export_excel,
+            "export_jpeg": _handle_export_jpeg, "exportar_jpeg": _handle_export_jpeg,
+            "export_jpeg_codes": _handle_export_jpeg_codes, "exportar_codigos": _handle_export_jpeg_codes,
+            "export_instructions": _handle_export_instructions, "exportar_instrucciones": _handle_export_instructions,
+            "help": _handle_help, "ayuda": _handle_help,
+            "ocultar": _handle_hide, "hide": _handle_hide, "verbergen": _handle_hide,
+            "mostrar": _handle_show, "show": _handle_show, "tonen": _handle_show,
+            "idioma": _handle_idioma, "language": _handle_idioma,
+        }
+        if cmd in _direct:
+            return await _direct[cmd](update, context)
         rest = cmd_match.group(3).strip()
         clean = f"{cmd} {rest}".strip()
     else:
@@ -979,13 +1188,15 @@ def start_telegram_bot() -> None:
     app = Application.builder().token(TELEGRAM_BOT_TOKEN).post_init(_post_init).build()
     app.add_handler(ChatMemberHandler(_handle_new_group, ChatMemberHandler.MY_CHAT_MEMBER))
     app.add_handler(CommandHandler("start", _start_command))
-    app.add_handler(CommandHandler("export_excel", _handle_export_excel))
-    app.add_handler(CommandHandler("export_jpeg", _handle_export_jpeg))
-    app.add_handler(CommandHandler("export_jpeg_codes", _handle_export_jpeg_codes))
-    app.add_handler(CommandHandler("export_instructions", _handle_export_instructions))
-    app.add_handler(CommandHandler("help", _handle_help))
-    app.add_handler(CommandHandler(["ocultar", "hide"], _handle_hide))
-    app.add_handler(CommandHandler(["mostrar", "show"], _handle_show))
+    app.add_handler(CommandHandler(["export_excel", "exportar_excel"], _handle_export_excel))
+    app.add_handler(CommandHandler(["export_jpeg", "exportar_jpeg"], _handle_export_jpeg))
+    app.add_handler(CommandHandler(["export_jpeg_codes", "exportar_codigos"], _handle_export_jpeg_codes))
+    app.add_handler(CommandHandler(["export_instructions", "exportar_instrucciones"], _handle_export_instructions))
+    app.add_handler(CommandHandler(["help", "ayuda"], _handle_help))
+    app.add_handler(CommandHandler(["ocultar", "hide", "verbergen"], _handle_hide))
+    app.add_handler(CommandHandler(["mostrar", "show", "tonen"], _handle_show))
+    app.add_handler(CommandHandler(["idioma", "language"], _handle_idioma))
+    app.add_handler(CallbackQueryHandler(_handle_lang_callback, pattern=r"^lang:"))
     app.add_handler(CallbackQueryHandler(_handle_approval))
     app.add_handler(MessageHandler(filters.CONTACT, _handle_contact))
     # Grupo: capturar /comandos como texto libre para el agente

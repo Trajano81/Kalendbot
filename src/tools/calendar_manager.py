@@ -154,8 +154,8 @@ def _check_field_permission(field_name: str, role: str, contact_id: str, event: 
 
 
 def _check_past_date_change(target: dict, parsed_changes: list[tuple[str, str]], role: str) -> str | None:
-    """Block date changes on past events for non-admin roles."""
-    if role in ("admin", "tester"):
+    """Block date changes on past events. Admin gets warning (prefix ⚠️), others get blocked."""
+    if role == "tester":
         return None
 
     date_fields = {"fecha", "fecha_inicio", "fecha_fin"}
@@ -164,6 +164,7 @@ def _check_past_date_change(target: dict, parsed_changes: list[tuple[str, str]],
         return None
 
     today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    is_admin = role == "admin"
 
     # Check 1: Is the event's current date in the past?
     event_date = target.get("fecha") or target.get("fecha_inicio")
@@ -171,11 +172,10 @@ def _check_past_date_change(target: dict, parsed_changes: list[tuple[str, str]],
         try:
             event_dt = datetime.strptime(event_date, "%Y-%m-%d")
             if event_dt < today:
-                return (
-                    "No se puede cambiar la fecha de un evento pasado. "
-                    f"El evento tiene fecha {event_date} que ya ocurrió. "
-                    "Contacta al administrador para autorización."
-                )
+                msg = f"La fecha actual del evento ({event_date}) ya pasó."
+                if is_admin:
+                    return f"⚠️ ATENCIÓN: {msg}"
+                return f"No se puede cambiar la fecha de un evento pasado. {msg}"
         except ValueError:
             pass
 
@@ -184,11 +184,10 @@ def _check_past_date_change(target: dict, parsed_changes: list[tuple[str, str]],
         try:
             new_dt = datetime.strptime(new_date, "%Y-%m-%d")
             if new_dt < today:
-                return (
-                    f"No se puede asignar una fecha pasada ({new_date}) a un evento. "
-                    f"Hoy es {today.strftime('%Y-%m-%d')}. "
-                    "Contacta al administrador para autorización."
-                )
+                msg = f"La fecha asignada ({new_date}) está en el pasado (hoy: {today.strftime('%Y-%m-%d')})."
+                if is_admin:
+                    return f"⚠️ ATENCIÓN: {msg}"
+                return f"No se puede asignar una fecha pasada a un evento. {msg}"
         except ValueError:
             pass
 
@@ -286,6 +285,10 @@ def calendar_manager(
     elif action == "search_event":
         if not event_id:
             return "Error: Falta event_id (texto de búsqueda)"
+        # Auto-detect #N or pure number → redirect to resolve_code
+        _code = event_id.strip().lstrip("#")
+        if _code.isdigit() or (len(_code) > 1 and _code[0].upper() == "R" and _code[1:].isdigit()):
+            return calendar_manager(action="resolve_code", year=year, event_id=_code)
         query = event_id.lower()
         results = []
         for e in all_events:
@@ -436,10 +439,14 @@ def calendar_manager(
         if is_instance and target is None:
             return f"Instancia con fecha '{instance_fecha}' no encontrada en '{event_id}'"
 
-        # Block date changes on past finalized events
-        past_err = _check_past_date_change(target, parsed_changes, role or "readonly")
-        if past_err:
-            return past_err
+        # Block date changes on past events (admin gets warning, others blocked)
+        past_msg = _check_past_date_change(target, parsed_changes, role or "readonly")
+        past_warning = None
+        if past_msg:
+            if past_msg.startswith("⚠️"):
+                past_warning = past_msg  # Admin warning — append to preview
+            else:
+                return past_msg  # Non-admin — block
 
         errors = []
         diffs = []
@@ -455,11 +462,15 @@ def calendar_manager(
                 errors.append(f"  {field}: {parse_err}")
                 continue
             old_val = target.get(field)
+            if old_val == parsed_val:
+                continue  # Skip no-op changes
             diffs.append(f"  {field}: {_format_value(old_val)} → {_format_value(parsed_val)}")
             changed_fields.append(field)
 
         if errors:
             return "Error en cambios:\n" + "\n".join(errors)
+        if not diffs:
+            return "No changes detected — the values are already set to what was requested."
 
         nombre = parent.get("nombre", event_id)
         inst_label = f" (instancia {instance_fecha})" if is_instance else ""
@@ -484,6 +495,8 @@ def calendar_manager(
                 except Exception as e:
                     logger.warning(f"ConflictDetector error: {e}")
 
+        if past_warning:
+            lines.append(past_warning)
         lines.append("Puedes deshacer después de aplicar.")
         return "\n".join(lines)
 
@@ -501,10 +514,10 @@ def calendar_manager(
         if is_instance and target is None:
             return f"Instancia con fecha '{instance_fecha}' no encontrada en '{event_id}'"
 
-        # Block date changes on past finalized events
-        past_err = _check_past_date_change(target, parsed_changes, role or "readonly")
-        if past_err:
-            return past_err
+        # Block date changes on past events (admin gets warning, others blocked)
+        past_msg = _check_past_date_change(target, parsed_changes, role or "readonly")
+        if past_msg and not past_msg.startswith("⚠️"):
+            return past_msg  # Non-admin — block
 
         # Validate all changes first
         to_apply = []
@@ -588,11 +601,54 @@ def calendar_manager(
         lines.extend(restored)
         return "\n".join(lines)
 
+    elif action == "resolve_code":
+        # Map JPEG export code (#N or #RN) to event ID — same sort as export
+        if not event_id:
+            return "Error: Falta event_id (código, ej: '16' o 'R1')"
+        code = event_id.strip().lstrip("#")
+
+        # Recurrent codes: R1, R2
+        if code.upper().startswith("R"):
+            try:
+                idx = int(code[1:]) - 1
+            except ValueError:
+                return f"Código recurrente inválido: {code}"
+            if 0 <= idx < len(recurrentes):
+                rec = recurrentes[idx]
+                return f"{rec['id']}|{rec.get('nombre', rec['id'])}"
+            return f"Código R{idx+1} fuera de rango (hay {len(recurrentes)} recurrentes)"
+
+        # Regular codes: 1, 2, 3... — sorted by date, show_in_export only
+        try:
+            idx = int(code) - 1
+        except ValueError:
+            return f"Código inválido: {code}. Usa un número (ej: 16) o R1/R2 para recurrentes"
+
+        # Expand recurrent instances + regular events, sorted by date (same as exporter)
+        expanded = list(all_events)
+        for rec in recurrentes:
+            if rec.get("expandir_en_export", True) is False:
+                continue
+            for inst in rec.get("instancias_2026", []):
+                merged = {**rec, **inst}
+                merged.pop("instancias_2026", None)
+                merged["nombre"] = rec.get("nombre_corto", rec.get("nombre", ""))
+                merged["_expanded"] = True
+                expanded.append(merged)
+        expanded.sort(key=lambda e: e.get("fecha", e.get("fecha_inicio", "9999-12-31")))
+        expanded = [e for e in expanded if e.get("show_in_export", True)]
+
+        if 0 <= idx < len(expanded):
+            evt = expanded[idx]
+            return f"{evt['id']}|{evt.get('nombre', evt['id'])}|fecha={evt.get('fecha', evt.get('fecha_inicio', '?'))}"
+        return f"Código {code} fuera de rango (hay {len(expanded)} eventos)"
+
     else:
         return (
             f"Acción desconocida: {action}. Opciones: list_all, get_event, search_event, "
             "list_by_status, list_by_contact, list_pending, list_upcoming, update_status, "
-            "update_show_export, batch_preview, batch_confirm, undo_last"
+            "update_show_export, batch_preview, batch_confirm, undo_last, "
+            "resolve_code (convierte código #N del JPEG a event_id, usa event_id='16' o 'R1')"
         )
 
 
