@@ -6,7 +6,9 @@ import os
 from langchain_community.chat_message_histories import FileChatMessageHistory
 from langchain.memory import ConversationBufferMemory
 
-DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
+from src.config import settings
+
+DATA_DIR = settings.data_dir
 MEMORIES_DIR = os.path.join(DATA_DIR, "memories")
 
 

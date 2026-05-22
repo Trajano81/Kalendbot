@@ -8,25 +8,25 @@ import json
 import time
 import logging
 import traceback
-from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
 from langgraph.checkpoint.memory import MemorySaver
 from openai import RateLimitError
 
+from src.config import settings
+from src.tracing import get_run_metadata
 from src.tools import ALL_TOOLS
 from src.gateways.contacts import identify_by_phone, get_contact_language
 
-load_dotenv()
 logger = logging.getLogger("kalendbot.agent")
 
-DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
+DATA_DIR = settings.data_dir
 
 # LLM
 llm = ChatOpenAI(
     model_name="gpt-4o-mini",
     temperature=0.1,
-    openai_api_key=os.getenv("OPENAI_API_KEY"),
+    openai_api_key=settings.openai_api_key,
 )
 
 # Checkpointer para persistir memoria de conversación
@@ -208,6 +208,14 @@ def _preprocess_command(message: str) -> str:
     # /cambiar o "cambiar" — edición de campos de eventos
     if re.match(r'^(cambiar?|change)\b', lower):
         body = re.sub(r'^(cambiar?|change)\s*', '', clean, flags=re.IGNORECASE).strip()
+        if batch_prefix:
+            return (
+                f"{prefix}{batch_prefix}"
+                f"[COMANDO: /cambiar] El usuario quiere editar un evento. Instrucción: \"{body}\". "
+                f"PASOS: "
+                f"1) Usa CalendarManager(search_event o resolve_code) para encontrar el event_id exacto. "
+                f"2) Aplica con CalendarManager(batch_confirm) directamente, sin batch_preview ni confirmación."
+            )
         return (
             f"{prefix}{batch_prefix}"
             f"[COMANDO: /cambiar] El usuario quiere editar un evento. Instrucción: \"{body}\". "
@@ -351,20 +359,24 @@ def handle_message(phone: str, message: str, contact_id: str | None = None, thre
     else:
         dynamic_prompt = base_prompt + ROLE_SUFFIX_FULL.format(contact_id=contact_id, role=role)
 
+    run_metadata = get_run_metadata(contact_id, role)
     config = {
         "configurable": {"thread_id": thread_id or contact_id},
         "recursion_limit": 50,
+        "metadata": run_metadata,
     }
     max_retries = 3
 
     for attempt in range(max_retries):
         try:
+            start_time = time.perf_counter()
             result = agent.invoke(
                 {"messages": [{"role": "system", "content": dynamic_prompt}, {"role": "user", "content": message}]},
                 config=config,
             )
+            duration_ms = round((time.perf_counter() - start_time) * 1000, 1)
             response = result["messages"][-1].content
-            logger.info(f"Respuesta a {contact_id}: {response[:50]}...")
+            logger.info(f"Respuesta a {contact_id} ({duration_ms}ms): {response[:50]}...")
             return response
         except RateLimitError as e:
             wait = 2 ** attempt  # 1s, 2s, 4s

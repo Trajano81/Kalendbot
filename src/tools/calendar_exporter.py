@@ -13,9 +13,10 @@ from openpyxl import load_workbook
 from openpyxl.drawing.spreadsheet_drawing import TwoCellAnchor
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
+from src.config import settings
 from src.tools.flyer_manager import CONTENT_MANAGER
 
-DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
+DATA_DIR = settings.data_dir
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "NV_2026_Jaarkalender V3.0.xlsx")
 
 # Filas reservadas: 1-2 titulo/formulas, 3 headers, 4-5 recurrentes

@@ -7,7 +7,9 @@ import os
 from datetime import datetime, timedelta
 from langchain_core.tools import Tool
 
-DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
+from src.config import settings
+
+DATA_DIR = settings.data_dir
 
 
 def conflict_detector(fecha_str: str) -> str:
