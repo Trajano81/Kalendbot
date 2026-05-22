@@ -1,0 +1,10 @@
+{
+  "id": "test-user",
+  "nombre": "Test User",
+  "telefono": "+521234567890",
+  "perfil_comunicacion": "casual",
+  "canal_preferido": "telegram",
+  "rol": "Usuario",
+  "rol_kalendbot": "readonly",
+  "idioma": "es"
+}

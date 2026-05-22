@@ -9,7 +9,9 @@ from typing import Optional
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 
-DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
+from src.config import settings
+
+DATA_DIR = settings.data_dir
 
 
 def _load_calendar(year: int = 2026) -> dict:

@@ -12,6 +12,7 @@ from zoneinfo import ZoneInfo
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup, BotCommand
 from telegram.ext import Application, MessageHandler, CommandHandler, CallbackQueryHandler, ChatMemberHandler, filters, ContextTypes
 
+from src.config import settings
 from src.agent import handle_message
 from src.tools.calendar_manager import calendar_manager
 from src.gateways.contacts import (
@@ -30,8 +31,8 @@ from src.gateways.contacts import (
 
 logger = logging.getLogger("kalendbot.telegram")
 
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
+TELEGRAM_BOT_TOKEN = settings.telegram_bot_token
+DATA_DIR = settings.data_dir
 
 # Coordinador principal — recibe copia de recordatorios de flyer
 COORDINATOR_ID = "rocco-van-velzen"
@@ -91,7 +92,7 @@ async def _send_reminders(context: ContextTypes.DEFAULT_TYPE) -> None:
     conf_config = config.get("confirmacion", {})
     flyer_config = config.get("flyer", {})
     grupo_config = config.get("grupo", {})
-    group_chat_id = os.getenv("TELEGRAM_GROUP_CHAT_ID", "")
+    group_chat_id = settings.telegram_group_chat_id
 
     # Cargar calendario
     year = datetime.now().year

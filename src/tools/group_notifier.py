@@ -3,11 +3,12 @@ Tool 6: GroupNotifier
 Publica mensajes en el chat grupal de NV Mexico.
 Envía a Telegram, WhatsApp, o ambos según configuración.
 """
-import os
 import logging
 from typing import Optional
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
+
+from src.config import settings
 
 logger = logging.getLogger("kalendbot.group_notifier")
 
@@ -26,8 +27,8 @@ def group_notifier(message: str, role: str = None) -> str:
 
     from src.gateways.dispatcher import send_to_group
 
-    has_telegram = bool(os.getenv("TELEGRAM_GROUP_CHAT_ID", ""))
-    has_whatsapp = bool(os.getenv("WHATSAPP_GROUP_CHAT_ID", ""))
+    has_telegram = bool(settings.telegram_group_chat_id)
+    has_whatsapp = bool(settings.whatsapp_group_chat_id)
 
     if has_telegram and has_whatsapp:
         channel = "both"

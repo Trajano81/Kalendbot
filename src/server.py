@@ -5,14 +5,15 @@ y los procesa con el agente KalendBot.
 import os
 import logging
 from contextlib import asynccontextmanager
-from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 import uvicorn
 
-from src.gateways.whatsapp_bot import handle_whatsapp_message, send_whatsapp_reminders
+from src.config import settings
+from src.logging_config import setup_logging
+from src.middleware import RequestLoggingMiddleware
+from src.channels.whatsapp.bot import handle_whatsapp_message, send_whatsapp_reminders
 
-load_dotenv()
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(levelname)s: %(message)s")
+setup_logging()
 logger = logging.getLogger("kalendbot.server")
 
 
@@ -34,7 +35,7 @@ def _start_whatsapp_scheduler():
         return
 
     # Leer hora de la config de recordatorios
-    reminder_config_path = os.path.join(os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data"), "config", "recordatorios.json")
+    reminder_config_path = os.path.join(settings.data_dir, "config", "recordatorios.json")
     hora, minuto = 9, 0
     tz_name = "America/Mexico_City"
     try:
@@ -76,6 +77,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="KalendBot", description="Bot de calendario NV Mexico", lifespan=lifespan)
+app.add_middleware(RequestLoggingMiddleware)
 
 
 # ---------------------------------------------------------------------------
@@ -137,7 +139,7 @@ async def status():
 # ---------------------------------------------------------------------------
 
 def start_server():
-    port = int(os.getenv("KALENDBOT_WEBHOOK_PORT", "8000"))
+    port = settings.webhook_port
     uvicorn.run(app, host="0.0.0.0", port=port)
 
 
