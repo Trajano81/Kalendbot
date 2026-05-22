@@ -10,9 +10,11 @@ from typing import Optional
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel, Field
 
+from src.config import settings
+
 logger = logging.getLogger("kalendbot.flyer_manager")
 
-DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
+DATA_DIR = settings.data_dir
 COORDINATOR_ID = "rocco-van-velzen"
 
 # Content Manager de NV Mexico

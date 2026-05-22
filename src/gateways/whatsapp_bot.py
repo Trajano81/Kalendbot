@@ -8,6 +8,7 @@ import json
 import logging
 from datetime import datetime, date
 
+from src.config import settings
 from src.agent import handle_message
 from src.gateways.contacts import (
     identify_by_phone,
@@ -23,7 +24,7 @@ from src.gateways.templates import render_template
 
 logger = logging.getLogger("kalendbot.whatsapp")
 
-DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
+DATA_DIR = settings.data_dir
 COORDINATOR_ID = "rocco-van-velzen"
 CONTENT_MANAGER_ID = "hanna-van-rijsse"
 
@@ -49,7 +50,7 @@ async def handle_whatsapp_message(data: dict) -> None:
 
     # Mensajes de grupo: solo responder si el bot fue invocado
     if parsed["is_group"]:
-        allowed = os.getenv("WHATSAPP_GROUP_CHAT_ID", "")
+        allowed = settings.whatsapp_group_chat_id
         if allowed and parsed["group_id"] != allowed:
             logger.info(f"WA grupo no autorizado: {parsed['group_id']}")
             return
@@ -104,7 +105,7 @@ async def handle_whatsapp_message(data: dict) -> None:
 # Grupo: detección de trigger y manejo de mensajes
 # ---------------------------------------------------------------------------
 
-WHATSAPP_BOT_JID = os.getenv("WHATSAPP_BOT_JID", "")
+WHATSAPP_BOT_JID = settings.whatsapp_bot_jid
 
 
 def _is_bot_triggered(parsed: dict) -> tuple[bool, str]:
@@ -374,7 +375,7 @@ def send_whatsapp_reminders() -> None:
     conf_config = config.get("confirmacion", {})
     flyer_config = config.get("flyer", {})
     grupo_config = config.get("grupo", {})
-    wa_group_id = os.getenv("WHATSAPP_GROUP_CHAT_ID", "")
+    wa_group_id = settings.whatsapp_group_chat_id
 
     year = datetime.now().year
     cal_path = os.path.join(DATA_DIR, f"calendario-{year}.json")

@@ -10,6 +10,8 @@ import mimetypes
 import httpx
 from typing import Protocol, runtime_checkable
 
+from src.config import settings
+
 logger = logging.getLogger("kalendbot.whatsapp_provider")
 
 
@@ -50,9 +52,9 @@ def phone_to_chat_id(phone: str) -> str:
 # Implementación WAHA
 # ---------------------------------------------------------------------------
 
-WAHA_API_URL = os.getenv("WAHA_API_URL", "")
-WAHA_API_KEY = os.getenv("WAHA_API_KEY", "")
-WAHA_SESSION = os.getenv("WAHA_SESSION_NAME", "kalendbot")
+WAHA_API_URL = settings.waha_api_url
+WAHA_API_KEY = settings.waha_api_key
+WAHA_SESSION = settings.waha_session_name
 
 
 class WAHAProvider:
@@ -218,7 +220,7 @@ class WAHAProvider:
 
 def get_whatsapp_provider() -> WhatsAppProvider:
     """Retorna el proveedor configurado en .env (WHATSAPP_PROVIDER=waha)."""
-    provider_type = os.getenv("WHATSAPP_PROVIDER", "waha").lower()
+    provider_type = settings.whatsapp_provider.lower()
 
     if provider_type == "waha":
         return WAHAProvider()

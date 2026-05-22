@@ -5,5 +5,6 @@
   "perfil_comunicacion": "formal",
   "canal_preferido": "telegram",
   "rol": "Content Manager NV Mexico",
-  "rol_kalendbot": "admin"
+  "rol_kalendbot": "admin",
+  "idioma": "nl"
 }

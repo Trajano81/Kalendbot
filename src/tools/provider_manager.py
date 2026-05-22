@@ -6,7 +6,9 @@ import json
 import os
 from langchain_core.tools import Tool
 
-DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
+from src.config import settings
+
+DATA_DIR = settings.data_dir
 PROVIDERS_DIR = os.path.join(DATA_DIR, "proveedores")
 
 

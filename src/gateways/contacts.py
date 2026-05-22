@@ -7,9 +7,11 @@ import re
 import json
 import logging
 
+from src.config import settings
+
 logger = logging.getLogger("kalendbot.contacts")
 
-DATA_DIR = os.getenv("KALENDBOT_DATA_DIR", "./kalendbot-data")
+DATA_DIR = settings.data_dir
 
 
 def normalize_phone(phone: str) -> str:

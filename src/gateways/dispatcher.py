@@ -2,10 +2,10 @@
 Dispatcher de notificaciones canal-agnóstico.
 Enruta mensajes a Telegram o WhatsApp según canal_preferido del contacto.
 """
-import os
 import logging
 import httpx
 
+from src.config import settings
 from src.gateways.contacts import load_contact, get_contact_telegram_id, get_contact_phone
 from src.gateways.whatsapp_provider import get_whatsapp_provider, phone_to_chat_id
 from src.gateways.templates import render_template
@@ -15,7 +15,7 @@ logger = logging.getLogger("kalendbot.dispatcher")
 
 def _send_telegram_message(chat_id: int | str, text: str) -> bool:
     """Envía un mensaje via Telegram Bot API."""
-    bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    bot_token = settings.telegram_bot_token
     if not bot_token:
         logger.warning("Sin TELEGRAM_BOT_TOKEN, mensaje no enviado")
         return False
@@ -80,14 +80,14 @@ def send_to_group(message: str, channel: str = "both") -> bool:
     sent = False
 
     if channel in ("telegram", "both"):
-        group_id = os.getenv("TELEGRAM_GROUP_CHAT_ID", "")
+        group_id = settings.telegram_group_chat_id
         if group_id:
             sent = _send_telegram_message(group_id, message) or sent
         else:
             logger.warning("TELEGRAM_GROUP_CHAT_ID no configurado")
 
     if channel in ("whatsapp", "both"):
-        wa_group_id = os.getenv("WHATSAPP_GROUP_CHAT_ID", "")
+        wa_group_id = settings.whatsapp_group_chat_id
         if wa_group_id:
             try:
                 provider = get_whatsapp_provider()

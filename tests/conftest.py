@@ -34,14 +34,20 @@ def writable_data_dir(tmp_path, monkeypatch):
     shutil.copytree(FIXTURES_DIR, tmp_path / "data", dirs_exist_ok=True)
     data_dir = str(tmp_path / "data")
 
-    # Patch DATA_DIR in all tool modules
+    # Patch DATA_DIR in all modules that use it
     from src.tools import calendar_manager, contact_manager, provider_manager
     from src.tools import conflict_detector, date_locker, flyer_manager
     from src.tools import rules_engine, calendar_exporter
+    from src.gateways import contacts as contacts_mod
+    from src.handlers import undo as undo_mod
+    from src import config as config_mod
+
+    # Patch settings.data_dir for any code that reads it at runtime
+    monkeypatch.setattr(config_mod.settings, "data_dir", data_dir)
 
     for mod in [calendar_manager, contact_manager, provider_manager,
                 conflict_detector, date_locker, flyer_manager,
-                rules_engine, calendar_exporter]:
+                rules_engine, calendar_exporter, contacts_mod, undo_mod]:
         monkeypatch.setattr(mod, "DATA_DIR", data_dir)
 
     # Also patch derived paths
