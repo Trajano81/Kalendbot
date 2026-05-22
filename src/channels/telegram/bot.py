@@ -300,7 +300,7 @@ async def _process_group_message(update: Update, context: ContextTypes.DEFAULT_T
 
         await update.message.reply_text(combined, reply_to_message_id=update.message.message_id)
     else:
-        message = f"[Grupo] [NO uses GroupNotifier, solo responde con texto. Si es un cambio, aplica directo con batch_confirm sin batch_preview] {text}"
+        message = f"[Grupo] [BATCH: aplica cambios directo con batch_confirm, NO uses batch_preview ni GroupNotifier] {text}"
         response = handle_message(phone=str(telegram_id), message=message, contact_id=contact_id)
         response = strip_markdown(response)
         await update.message.reply_text(response, reply_to_message_id=update.message.message_id)

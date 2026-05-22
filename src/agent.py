@@ -208,6 +208,14 @@ def _preprocess_command(message: str) -> str:
     # /cambiar o "cambiar" — edición de campos de eventos
     if re.match(r'^(cambiar?|change)\b', lower):
         body = re.sub(r'^(cambiar?|change)\s*', '', clean, flags=re.IGNORECASE).strip()
+        if batch_prefix:
+            return (
+                f"{prefix}{batch_prefix}"
+                f"[COMANDO: /cambiar] El usuario quiere editar un evento. Instrucción: \"{body}\". "
+                f"PASOS: "
+                f"1) Usa CalendarManager(search_event o resolve_code) para encontrar el event_id exacto. "
+                f"2) Aplica con CalendarManager(batch_confirm) directamente, sin batch_preview ni confirmación."
+            )
         return (
             f"{prefix}{batch_prefix}"
             f"[COMANDO: /cambiar] El usuario quiere editar un evento. Instrucción: \"{body}\". "
