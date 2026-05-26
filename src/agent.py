@@ -65,6 +65,7 @@ HERRAMIENTAS DISPONIBLES:
 - FlyerManager: Gestionar flujo de flyers (check_responsibility, get_status, request_flyer, approve, reject, set_reminder)
 - RulesEngine: Consultar reglas de negocio (tiers, precedencia, restricciones, instrucciones)
 - CalendarExporter: Exportar calendario a Excel (.xlsx). Filtros opcionales: año, estado, contacto
+- ActivityCreator: Crear nuevos eventos. Acciones: preview (validar y mostrar resumen con conflictos), confirm (guardar en calendario ordenado por fecha). Campos requeridos: nombre, fecha, contacto_ids, partner_id, tier_promocion, flyer_responsable. Estado por defecto: pendiente
 
 REGLAS DE BÚSQUEDA:
 1. EVENTOS POR CÓDIGO (#N): Cuando el usuario use #N o "code N" o solo un número para referirse a un evento (ej: "#16", "code 16", "16"), llama CalendarManager(resolve_code, event_id="16") PRIMERO para obtener el event_id real. Los códigos corresponden al orden en el JPEG export (1=primer evento por fecha, R1=primer recurrente).
@@ -128,6 +129,7 @@ COMANDOS DISPONIBLES (los mensajes con [COMANDO: /xxx] ya fueron pre-procesados)
 - /evento (o /event): Ver detalle de un evento. Ej: "/evento Koningsdag"
 - /ocultar (o /hide, /verbergen): Ocultar evento del export. Ej: "/ocultar Buitendag"
 - /mostrar (o /show, /tonen): Mostrar evento en el export. Ej: "/mostrar Buitendag"
+- /agregar (o /add, /toevoegen): Crear nuevo evento con flujo guiado paso a paso. Pregunta cada campo al usuario antes de crear
 Cuando recibas un mensaje con [COMANDO: /xxx], SIGUE LOS PASOS INDICADOS usando las herramientas. NO respondas solo con texto.
 
 Sé conciso y profesional pero amigable. Recuerda: responde SIEMPRE en {lang_name}."""
@@ -297,6 +299,26 @@ def _preprocess_command(message: str) -> str:
             f"[COMANDO: /mostrar] El usuario quiere mostrar un evento en el export. Instrucción: \"{body}\". "
             f"PASOS: 1) Usa CalendarManager(search_event) para encontrar el evento. "
             f"2) Usa CalendarManager(update_show_export, event_id=..., show_in_export=true)."
+        )
+
+    # /agregar — crear nuevo evento con flujo guiado
+    if re.match(r'^(agregar|add|toevoegen)\b', lower):
+        body = re.sub(r'^(agregar|add|toevoegen)\s*', '', clean, flags=re.IGNORECASE).strip()
+        return (
+            f"{prefix}{batch_prefix}"
+            f"[COMANDO: /agregar] El usuario quiere crear un nuevo evento. "
+            f"Informacion adicional: \"{body}\". "
+            f"PASOS OBLIGATORIOS (flujo guiado, pregunta uno por uno): "
+            f"1) Pregunta el nombre del evento. "
+            f"2) Pregunta la fecha (formato YYYY-MM-DD o natural, convierte a YYYY-MM-DD). "
+            f"3) Muestra los proveedores disponibles con ProviderManager('list_all') y pregunta cual elegir. "
+            f"4) Muestra los contactos disponibles con ContactManager('search:') y pregunta quienes seran responsables. "
+            f"5) Pregunta el tier de promocion (opciones: regular, mediano, grande, delegado, publicacion, ninguno). "
+            f"6) Pregunta el responsable de flyer (opciones: nv, proveedor, ninguno). "
+            f"7) Pregunta el estado (por defecto: pendiente, opciones: pendiente, confirmado). "
+            f"8) Con todos los campos, llama ActivityCreator(preview, ...) y muestra el resumen. "
+            f"9) Cuando el usuario confirme, llama ActivityCreator(confirm, ...) con los mismos parametros. "
+            f"Si el usuario ya proporciono informacion en el mensaje inicial, usala y pregunta solo lo que falte."
         )
 
     # No es un comando reconocido, devolver original

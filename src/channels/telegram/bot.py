@@ -37,6 +37,7 @@ import src.handlers.help  # noqa: F401
 import src.handlers.language  # noqa: F401
 import src.handlers.status  # noqa: F401
 import src.handlers.undo  # noqa: F401
+import src.handlers.add_activity  # noqa: F401
 from src.handlers.reminders import load_reminder_config, send_reminders
 
 logger = logging.getLogger("kalendbot.telegram")
@@ -228,6 +229,7 @@ async def _handle_group_text(update: Update, context: ContextTypes.DEFAULT_TYPE,
 _KNOWN_VERBS = re.compile(
     r'^(cambiar?|change|ocultar|verbergen|hide|mostrar|tonen|show|'
     r'estado|status|buscar|search|zoek|deshacer|undo|evento|event|'
+    r'agregar|add|toevoegen|'
     r'pendientes?|pending|proximos?|próximos?|upcoming|volgende)\b',
     re.IGNORECASE
 )
@@ -586,6 +588,23 @@ async def _handle_undo(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     await update.message.reply_text(response)
 
 
+async def _handle_agregar(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Add activity: always falls through to agent for guided flow."""
+    telegram_id = update.message.from_user.id
+    contact_id = identify_by_telegram_id(telegram_id)
+    if not contact_id:
+        await update.message.reply_text("No estas identificado. Usa /start primero.")
+        return
+
+    text = update.message.text.strip()
+    args_text = re.sub(r'^/\S*\s*', '', text).strip()
+
+    clean = f"agregar {args_text}".strip()
+    response = handle_message(phone=str(update.message.chat_id), message=clean, contact_id=contact_id)
+    response = strip_markdown(response)
+    await update.message.reply_text(response)
+
+
 # ---------------------------------------------------------------------------
 # Telegram-only: /idioma with inline keyboard
 # ---------------------------------------------------------------------------
@@ -655,6 +674,7 @@ _COMMANDS_BY_LANG = {
         BotCommand("exportar_excel", "Exportar calendario a Excel"),
         BotCommand("exportar_jpeg", "Exportar como imagen"),
         BotCommand("exportar_codigos", "Ver codigos de actividades"),
+        BotCommand("agregar", "Agregar nueva actividad"),
         BotCommand("deshacer", "Revertir ultimo cambio"),
         BotCommand("idioma", "Cambiar idioma"),
         BotCommand("ayuda", "Mostrar comandos disponibles"),
@@ -670,6 +690,7 @@ _COMMANDS_BY_LANG = {
         BotCommand("export_excel", "Export calendar to Excel"),
         BotCommand("export_jpeg", "Export as image"),
         BotCommand("export_jpeg_codes", "View activity codes"),
+        BotCommand("add", "Add new activity"),
         BotCommand("undo", "Revert last change"),
         BotCommand("language", "Change language"),
         BotCommand("help", "Show available commands"),
@@ -685,6 +706,7 @@ _COMMANDS_BY_LANG = {
         BotCommand("export_excel", "Kalender exporteren naar Excel"),
         BotCommand("export_jpeg", "Exporteren als afbeelding"),
         BotCommand("export_jpeg_codes", "Activiteitscodes bekijken"),
+        BotCommand("toevoegen", "Nieuwe activiteit toevoegen"),
         BotCommand("undo", "Laatste wijziging ongedaan maken"),
         BotCommand("language", "Taal wijzigen"),
         BotCommand("help", "Beschikbare commando's"),
@@ -814,6 +836,7 @@ def start_telegram_bot() -> None:
     app.add_handler(CommandHandler(["mostrar", "show", "tonen"], _handle_show))
     app.add_handler(CommandHandler(["status", "estado"], _handle_status))
     app.add_handler(CommandHandler(["undo", "deshacer", "ongedaan"], _handle_undo))
+    app.add_handler(CommandHandler(["agregar", "add", "toevoegen"], _handle_agregar))
     app.add_handler(CommandHandler(["idioma", "language"], _handle_idioma))
     app.add_handler(CallbackQueryHandler(_handle_lang_callback, pattern=r"^lang:"))
     app.add_handler(CallbackQueryHandler(_handle_approval))

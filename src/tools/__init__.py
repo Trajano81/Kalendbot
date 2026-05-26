@@ -7,6 +7,7 @@ from src.tools.group_notifier import group_notifier_tool
 from src.tools.flyer_manager import flyer_manager_tool
 from src.tools.rules_engine import rules_engine_tool
 from src.tools.calendar_exporter import calendar_exporter_tool
+from src.tools.activity_creator import activity_creator_tool
 
 READ_TOOLS = [
     calendar_manager_tool,
@@ -21,6 +22,7 @@ WRITE_TOOLS = [
     group_notifier_tool,
     flyer_manager_tool,
     calendar_exporter_tool,
+    activity_creator_tool,
 ]
 
 ALL_TOOLS = READ_TOOLS + WRITE_TOOLS

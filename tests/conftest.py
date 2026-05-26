@@ -37,7 +37,7 @@ def writable_data_dir(tmp_path, monkeypatch):
     # Patch DATA_DIR in all modules that use it
     from src.tools import calendar_manager, contact_manager, provider_manager
     from src.tools import conflict_detector, date_locker, flyer_manager
-    from src.tools import rules_engine, calendar_exporter
+    from src.tools import rules_engine, calendar_exporter, activity_creator
     from src.gateways import contacts as contacts_mod
     from src.handlers import undo as undo_mod
     from src import config as config_mod
@@ -47,13 +47,16 @@ def writable_data_dir(tmp_path, monkeypatch):
 
     for mod in [calendar_manager, contact_manager, provider_manager,
                 conflict_detector, date_locker, flyer_manager,
-                rules_engine, calendar_exporter, contacts_mod, undo_mod]:
+                rules_engine, calendar_exporter, activity_creator,
+                contacts_mod, undo_mod]:
         monkeypatch.setattr(mod, "DATA_DIR", data_dir)
 
     # Also patch derived paths
     monkeypatch.setattr(contact_manager, "CONTACTS_DIR", os.path.join(data_dir, "contactos"))
     monkeypatch.setattr(provider_manager, "PROVIDERS_DIR", os.path.join(data_dir, "proveedores"))
     monkeypatch.setattr(rules_engine, "CONFIG_DIR", os.path.join(data_dir, "config"))
+    monkeypatch.setattr(activity_creator, "PROVIDERS_DIR", os.path.join(data_dir, "proveedores"))
+    monkeypatch.setattr(activity_creator, "CONTACTS_DIR", os.path.join(data_dir, "contactos"))
 
     return data_dir
 

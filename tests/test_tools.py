@@ -629,3 +629,210 @@ class TestMultiTaskBatchFlow:
             role="readonly",
         )
         assert "permiso" in result.lower() or "error" in result.lower()
+
+
+class TestActivityCreator:
+    """Tests for the ActivityCreator tool."""
+
+    def test_preview_valid(self, writable_data_dir):
+        """Preview with all valid fields returns formatted summary."""
+        from src.tools.activity_creator import activity_creator
+        result = activity_creator(
+            action="preview",
+            nombre="Test Event",
+            fecha="2026-09-15",
+            contacto_ids="hanna-test",
+            partner_id="nv-mexico",
+            tier_promocion="regular",
+            flyer_responsable="nv",
+            role="admin",
+        )
+        assert "Test Event" in result
+        assert "2026-09-15" in result
+        assert "nv-mexico" in result
+        assert "Confirma" in result
+
+    def test_preview_conflict_detection(self, writable_data_dir):
+        """Preview on a date with existing confirmed event mentions conflict."""
+        from src.tools.activity_creator import activity_creator
+        result = activity_creator(
+            action="preview",
+            nombre="Conflicting Event",
+            fecha="2026-05-24",  # same date as Koningsdag (confirmed)
+            contacto_ids="hanna-test",
+            partner_id="nv-mexico",
+            tier_promocion="regular",
+            flyer_responsable="nv",
+            role="admin",
+        )
+        assert "Conflicting Event" in result
+
+    def test_confirm_saves_sorted(self, writable_data_dir):
+        """Confirm inserts event sorted by date in eventos array."""
+        from src.tools.activity_creator import activity_creator, _load_calendar
+        result = activity_creator(
+            action="confirm",
+            nombre="Mid Year Event",
+            fecha="2026-06-15",
+            contacto_ids="hanna-test",
+            partner_id="nv-mexico",
+            tier_promocion="regular",
+            flyer_responsable="nv",
+            role="admin",
+        )
+        assert "mid-year-event" in result.lower()
+
+        # Verify sorted insertion
+        cal = _load_calendar(2026)
+        fechas = [e.get("fecha", "9999") for e in cal["eventos"]]
+        assert fechas == sorted(fechas)
+
+        # Verify the event is present
+        ids = [e["id"] for e in cal["eventos"]]
+        assert "mid-year-event" in ids
+
+    def test_confirm_duplicate_id_blocked(self, writable_data_dir):
+        """Creating an event with a slug that already exists is blocked."""
+        from src.tools.activity_creator import activity_creator
+        result = activity_creator(
+            action="confirm",
+            nombre="Koningsdag 2026",  # slug = koningsdag-2026, already exists
+            fecha="2026-09-15",
+            contacto_ids="hanna-test",
+            partner_id="nv-mexico",
+            tier_promocion="regular",
+            flyer_responsable="nv",
+            role="admin",
+        )
+        assert "ya existe" in result.lower()
+
+    def test_readonly_blocked(self, writable_data_dir):
+        """Readonly role cannot create events."""
+        from src.tools.activity_creator import activity_creator
+        result = activity_creator(
+            action="preview",
+            nombre="Test",
+            fecha="2026-09-15",
+            contacto_ids="hanna-test",
+            partner_id="nv-mexico",
+            tier_promocion="regular",
+            flyer_responsable="nv",
+            role="readonly",
+        )
+        assert "permiso" in result.lower()
+
+    def test_invalid_date_format(self, writable_data_dir):
+        """Invalid date format returns error."""
+        from src.tools.activity_creator import activity_creator
+        result = activity_creator(
+            action="preview",
+            nombre="Test",
+            fecha="15-09-2026",
+            contacto_ids="hanna-test",
+            partner_id="nv-mexico",
+            tier_promocion="regular",
+            flyer_responsable="nv",
+            role="admin",
+        )
+        assert "formato" in result.lower() or "error" in result.lower()
+
+    def test_invalid_tier(self, writable_data_dir):
+        """Invalid tier_promocion returns error."""
+        from src.tools.activity_creator import activity_creator
+        result = activity_creator(
+            action="preview",
+            nombre="Test",
+            fecha="2026-09-15",
+            contacto_ids="hanna-test",
+            partner_id="nv-mexico",
+            tier_promocion="mega",
+            flyer_responsable="nv",
+            role="admin",
+        )
+        assert "invalido" in result.lower() or "opciones" in result.lower()
+
+    def test_invalid_partner_id(self, writable_data_dir):
+        """Non-existent partner_id returns error."""
+        from src.tools.activity_creator import activity_creator
+        result = activity_creator(
+            action="preview",
+            nombre="Test",
+            fecha="2026-09-15",
+            contacto_ids="hanna-test",
+            partner_id="nonexistent-partner",
+            tier_promocion="regular",
+            flyer_responsable="nv",
+            role="admin",
+        )
+        assert "no encontrado" in result.lower() or "error" in result.lower()
+
+    def test_invalid_contact_id(self, writable_data_dir):
+        """Non-existent contact ID returns error."""
+        from src.tools.activity_creator import activity_creator
+        result = activity_creator(
+            action="preview",
+            nombre="Test",
+            fecha="2026-09-15",
+            contacto_ids="nonexistent-contact",
+            partner_id="nv-mexico",
+            tier_promocion="regular",
+            flyer_responsable="nv",
+            role="admin",
+        )
+        assert "no encontrado" in result.lower() or "error" in result.lower()
+
+    def test_confirm_sets_default_fields(self, writable_data_dir):
+        """Confirmed event has all expected default fields."""
+        from src.tools.activity_creator import activity_creator, _load_calendar
+        activity_creator(
+            action="confirm",
+            nombre="Defaults Test",
+            fecha="2026-10-01",
+            contacto_ids="hanna-test",
+            partner_id="nv-mexico",
+            tier_promocion="mediano",
+            flyer_responsable="proveedor",
+            role="admin",
+        )
+        cal = _load_calendar(2026)
+        evt = next(e for e in cal["eventos"] if e["id"] == "defaults-test")
+        assert evt["show_in_export"] is True
+        assert evt["fecha_exacta"] is True
+        assert evt["flyer_status"] == "no_solicitado"
+        assert evt["estado"] == "pendiente"
+        assert "ultima_actualizacion" in evt
+
+    def test_unknown_action(self, writable_data_dir):
+        """Unknown action returns error."""
+        from src.tools.activity_creator import activity_creator
+        result = activity_creator(
+            action="delete",
+            nombre="Test",
+            fecha="2026-09-15",
+            contacto_ids="hanna-test",
+            partner_id="nv-mexico",
+            tier_promocion="regular",
+            flyer_responsable="nv",
+            role="admin",
+        )
+        assert "desconocida" in result.lower()
+
+
+class TestPreprocessAgregar:
+    """Tests for /agregar command preprocessing."""
+
+    def test_agregar_command(self):
+        from src.agent import _preprocess_command
+        result = _preprocess_command("agregar un nuevo evento")
+        assert "[COMANDO: /agregar]" in result
+        assert "ActivityCreator" in result
+
+    def test_add_command_english(self):
+        from src.agent import _preprocess_command
+        result = _preprocess_command("add a new event")
+        assert "[COMANDO: /agregar]" in result
+
+    def test_toevoegen_command_dutch(self):
+        from src.agent import _preprocess_command
+        result = _preprocess_command("toevoegen nieuw evenement")
+        assert "[COMANDO: /agregar]" in result
